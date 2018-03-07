@@ -1,0 +1,21 @@
+{
+    "name": "johnxu/tool",
+    "description": "payment package",
+    "keywords": ["tool","许发君","johnxu","工具类"],
+    "homepage": "https://www.johnxu.net",
+    "authors": [
+        {
+            "name": "johnxu",
+            "email": "fsyzxz@163.com"
+        }
+    ],
+    "require" : {
+        "php" : ">=7.1.0"
+    },
+    "require-dev": {},
+    "autoload": {
+        "psr-4": {
+            "johnxu\\tool\\": "src/"
+        }
+    }
+}
