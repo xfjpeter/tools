@@ -2,7 +2,7 @@
 /**
  * @author johnxu <fsyzxz@163.com>
  *
- * @link https://www.johnxu.net
+ * @link   https://www.johnxu.net
  */
 
 namespace johnxu\tool;
@@ -18,7 +18,8 @@ class Str
      * construct
      */
     private function __construct()
-    {}
+    {
+    }
 
     /**
      * instantiation
@@ -105,8 +106,8 @@ class Str
      *
      * @author johnxu <fsyzxz@163.com>
      *
-     * @param  string  $haystack lookup in the string
-     * @param  string  $neddle   query string
+     * @param  string $haystack lookup in the string
+     * @param  string $neddle   query string
      *
      * @return boolean
      */
@@ -124,6 +125,7 @@ class Str
      *
      * @param  string $haystack
      * @param  string $neddle
+     *
      * @return string
      */
     public function remove(string $haystack, string $neddle): string
@@ -131,7 +133,7 @@ class Str
         $haystack = self::instance()->convertToArray($haystack);
         foreach ($haystack as $key => $item) {
             if (self::instance()->has($neddle, $item)) {
-                unset($haystack[$key]);
+                unset($haystack[ $key ]);
             }
         }
 
@@ -204,7 +206,8 @@ class Str
 
     public function encoding(string $string, string $to = 'UTF-8', string $from = null): string
     {
-        $from = $from ?: mb_detect_encoding($string, 'UTF-8, CP850, ISO-8859-15', true);
+        $from = $from ? : mb_detect_encoding($string, 'UTF-8, CP850, ISO-8859-15', true);
+
         return mb_convert_encoding($string, $to, $from);
     }
 
@@ -222,18 +225,36 @@ class Str
     public function generateTradeNo(int $length = 10): string
     {
         return date('YmdHis') . self::instance()->cut(
-            self::instance()->arrayToString(
-                array_map('ord', str_split(
-                    self::instance()->cut(uniqid(), 6, 13), 1)
-                )),
-            0,
-            $length
-        );
+                self::instance()->arrayToString(
+                    array_map(
+                        'ord', str_split(
+                                 self::instance()->cut(uniqid(), 6, 13), 1)
+                    )),
+                0,
+                $length
+            );
+    }
+
+    /**
+     * generate uid
+     *
+     * @param string $prefix
+     *
+     * @return string
+     */
+    public function generateUid(string $prefix = ''): string
+    {
+        return $prefix . self::instance()->arrayToString(
+            array_map(
+                'ord', str_split(
+                         self::instance()->cut(uniqid(), 6, 13), 1)
+            ));
     }
 
     /**
      * forbidden
      */
     final public function __clone()
-    {}
+    {
+    }
 }
