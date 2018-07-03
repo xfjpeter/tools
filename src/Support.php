@@ -34,7 +34,6 @@ class Support
                 }
             }
         }
-        echo $uri;
         $params[CURLOPT_URL]            = $uri;
         $params[CURLOPT_RETURNTRANSFER] = 1;
         $params[CURLOPT_SSL_VERIFYPEER] = false;
