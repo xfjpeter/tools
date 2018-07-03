@@ -12,20 +12,29 @@ class Support
      * @access public
      *
      * @param  string    $uri
-     * @param  mixed     $data
+     * @param  array     $data
      * @param  string    $method
      * @param  bool|null $secret
      * @param  string    $key
      *
      * @return mixed
      */
-    public function requestApi(string $uri, $data, string $method = 'get', bool $secret = null, string $key = null)
+    public static function requestApi(string $uri, array $data = [], string $method = 'get', bool $secret = null, string $key = null)
     {
         $method = strtoupper($method);
         $ch     = curl_init();
-        if ($method == 'GET') {
-            $uri .= '?' . urldecode(http_build_query($data));
+        if ('GET' == $method) {
+            if ($data) {
+                if (strpos($uri, '?')) {
+                    foreach ($data as $key => $item) {
+                        $uri .= "&{$key}={$item}";
+                    }
+                } else {
+                    $uri .= '?' . urldecode(http_build_query($data));
+                }
+            }
         }
+        echo $uri;
         $params[CURLOPT_URL]            = $uri;
         $params[CURLOPT_RETURNTRANSFER] = 1;
         $params[CURLOPT_SSL_VERIFYPEER] = false;
