@@ -25,7 +25,9 @@ var_dump(Str::instance()->encoding('�����Ǻ�����', 'UTF-8'))
 - stringToArray(string) // 将字符串转换成数组
 - ucwords(string) // 将字符串每个单子首字母大写
 - ucfirst(string) // 将字符首字母大写
-- generateTradeNo(length) // 创建订单号
+- generateTradeNo(length) // 创建订单号\
+- getMachineCode(); // 获取机器码：8E8363C1-094E0EDC-7D67C393
+- generateUid(); // 创建用户ID
 
 ## RSA生成签名串
 ```php

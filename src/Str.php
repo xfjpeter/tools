@@ -133,7 +133,7 @@ class Str
         $haystack = self::instance()->convertToArray($haystack);
         foreach ($haystack as $key => $item) {
             if (self::instance()->has($neddle, $item)) {
-                unset($haystack[ $key ]);
+                unset($haystack[$key]);
             }
         }
 
@@ -206,7 +206,7 @@ class Str
 
     public function encoding(string $string, string $to = 'UTF-8', string $from = null): string
     {
-        $from = $from ? : mb_detect_encoding($string, 'UTF-8, CP850, ISO-8859-15', true);
+        $from = $from ?: mb_detect_encoding($string, 'UTF-8, CP850, ISO-8859-15', true);
 
         return mb_convert_encoding($string, $to, $from);
     }
@@ -225,14 +225,14 @@ class Str
     public function generateTradeNo(int $length = 10): string
     {
         return date('YmdHis') . self::instance()->cut(
-                self::instance()->arrayToString(
-                    array_map(
-                        'ord', str_split(
-                                 self::instance()->cut(uniqid(), 6, 13), 1)
-                    )),
-                0,
-                $length
-            );
+            self::instance()->arrayToString(
+                array_map(
+                    'ord', str_split(
+                        self::instance()->cut(uniqid(), 6, 13), 1)
+                )),
+            0,
+            $length
+        );
     }
 
     /**
@@ -247,8 +247,29 @@ class Str
         return $prefix . self::instance()->arrayToString(
             array_map(
                 'ord', str_split(
-                         self::instance()->cut(uniqid(), 6, 13), 1)
+                    self::instance()->cut(uniqid(), 6, 13), 1)
             ));
+    }
+
+    /**
+     * 获取注册码|机器码类型：8E8363C1-094E0EDC-7D67C393
+     *
+     * @param  int|integer $block
+     * @param  int|integer $blockSize
+     * @param  string      $split
+     *
+     * @return string
+     */
+    public function getMachineCode(int $block = 3, int $blockSize = 8, string $split = '-'): string
+    {
+        $result = [];
+        for ($i = 0; $i < $block; $i++) {
+            array_push($result, bin2hex((random_bytes($blockSize / 2))));
+        }
+
+        $result = implode($split, $result);
+
+        return strtoupper($result);
     }
 
     /**
