@@ -46,7 +46,7 @@ class Http
 	{
 		$method = strtoupper($method);
 		$ch     = curl_init();
-		if ('GET' == $method)
+		if ($method == 'GET')
 		{
 			if ($data)
 			{
@@ -63,32 +63,25 @@ class Http
 				}
 			}
 		}
-		$params[CURLOPT_URL]            = $uri;
-		$params[CURLOPT_RETURNTRANSFER] = 1;
-		$params[CURLOPT_SSL_VERIFYPEER] = false;
-		$params[CURLOPT_SSL_VERIFYHOST] = false;
-		if ($method == 'POST')
-		{
-			$params[CURLOPT_POST]       = 1;
-			$params[CURLOPT_POSTFIELDS] = $data;
-		}
-
-		curl_setopt($ch, CURLOPT_URL, $uri);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_HEADER, 0);
-		if ($method == 'POST')
+		else if ($method == 'POST')
 		{
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, is_array($data) ? urldecode(http_build_query($data)) : $data);
 		}
+
+		curl_setopt($ch, CURLOPT_URL, $uri);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_HEADER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 		if ($secret && $key)
 		{
-			$params[CURLOPT_SSLCERTTYPE] = 'PEM';
-			$params[CURLOPT_SSLCERT]     = $secret;
-			$params[CURLOPT_SSLKEYTYPE]  = 'PEM';
-			$params[CURLOPT_SSLKEY]      = $key;
+			curl_setopt($ch, CURLOPT_SSLCERTTYPE, 'PEM');
+			curl_setopt($ch, CURLOPT_SSLCERT, $secret);
+			curl_setopt($ch, CURLOPT_SSLKEYTYPE, 'PEM');
+			curl_setopt($ch, CURLOPT_SSLKEY, $key);
 		}
-		curl_setopt_array($ch, $params);
+		$this->data = curl_exec($ch);
 		if (curl_errno($ch))
 		{
 			$this->error = curl_error($ch);
@@ -96,7 +89,6 @@ class Http
 		}
 		$info = curl_getinfo($ch);
 		$this->setInfo($info);
-		$this->data = curl_exec($ch);
 		curl_close($ch);
 
 		return $this;
