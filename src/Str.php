@@ -32,7 +32,8 @@ class Str
      */
     public static function instance()
     {
-        if (!self::$instance instanceof self) {
+        if ( !self::$instance instanceof self )
+        {
             self::$instance = new self();
         }
 
@@ -48,9 +49,9 @@ class Str
      *
      * @return string
      */
-    public function reverse(string $string): string
+    public function reverse( string $string ): string
     {
-        return strrev($string);
+        return strrev( $string );
     }
 
     /**
@@ -60,11 +61,13 @@ class Str
      *
      * @author johnxu <fsyzxz@163.com>
      *
+     * @param string $string 字符串
+     *
      * @return string
      */
-    public function lower(string $string): string
+    public function lower( string $string ): string
     {
-        return strtolower($string);
+        return strtolower( $string );
     }
 
     /**
@@ -74,11 +77,13 @@ class Str
      *
      * @author johnxu <fsyzxz@163.com>
      *
+     * @param string $string 字符串
+     *
      * @return string
      */
-    public function upper(string $string): string
+    public function upper( string $string ): string
     {
-        return strtoupper($string);
+        return strtoupper( $string );
     }
 
     /**
@@ -94,9 +99,9 @@ class Str
      *
      * @return string
      */
-    public function cut(string $string, int $start = 0, $length = null): string
+    public function cut( string $string, int $start = 0, $length = null ): string
     {
-        return mb_substr($string, $start, $length);
+        return mb_substr( $string, $start, $length );
     }
 
     /**
@@ -107,37 +112,39 @@ class Str
      * @author johnxu <fsyzxz@163.com>
      *
      * @param  string $haystack lookup in the string
-     * @param  string $neddle   query string
+     * @param  string $needle   query string
      *
      * @return boolean
      */
-    public function has(string $haystack, string $neddle): bool
+    public function has( string $haystack, string $needle ): bool
     {
-        return !(strpos($haystack, $neddle) === false);
+        return !(strpos( $haystack, $needle ) === false);
     }
 
     /**
-     * remove neddle in haystack
+     * remove needle in haystack
      *
      * @access public
      *
      * @author johnxu <fsyzxz@163.com>
      *
      * @param  string $haystack
-     * @param  string $neddle
+     * @param  string $needle
      *
      * @return string
      */
-    public function remove(string $haystack, string $neddle): string
+    public function remove( string $haystack, string $needle ): string
     {
-        $haystack = self::instance()->convertToArray($haystack);
-        foreach ($haystack as $key => $item) {
-            if (self::instance()->has($neddle, $item)) {
-                unset($haystack[$key]);
+        $haystack = self::instance()->convertToArray( $haystack );
+        foreach ( $haystack as $key => $item )
+        {
+            if ( self::instance()->has( $needle, $item ) )
+            {
+                unset( $haystack[$key] );
             }
         }
 
-        return self::instance()->arrayToString($haystack);
+        return self::instance()->arrayToString( $haystack );
     }
 
     /**
@@ -147,13 +154,13 @@ class Str
      *
      * @author johnxu <fsyzxz@163.com>
      *
-     * @param  array $string
+     * @param  array $array
      *
-     * @return array
+     * @return string
      */
-    public function arrayToString(array $array): string
+    public function arrayToString( array $array ): string
     {
-        return implode(null, $array);
+        return implode( null, $array );
     }
 
     /**
@@ -167,9 +174,9 @@ class Str
      *
      * @return array
      */
-    public function convertToArray(string $string): array
+    public function convertToArray( string $string ): array
     {
-        return str_split($string, 1);
+        return str_split( $string, 1 );
     }
 
     /**
@@ -183,9 +190,9 @@ class Str
      *
      * @return string
      */
-    public function ucfirst(string $string): string
+    public function ucfirst( string $string ): string
     {
-        return ucfirst($string);
+        return ucfirst( $string );
     }
 
     /**
@@ -199,16 +206,25 @@ class Str
      *
      * @return string
      */
-    public function ucwords(string $string): string
+    public function ucwords( string $string ): string
     {
-        return ucwords($string);
+        return ucwords( $string );
     }
 
-    public function encoding(string $string, string $to = 'UTF-8', string $from = null): string
+    /**
+     * Line-to-line character encoding
+     *
+     * @param string      $string
+     * @param string      $to
+     * @param string|null $from
+     *
+     * @return string
+     */
+    public function encoding( string $string, string $to = 'UTF-8', string $from = null ): string
     {
-        $from = $from ?: mb_detect_encoding($string, 'UTF-8, CP850, ISO-8859-15', true);
+        $from = $from ?: mb_detect_encoding( $string, 'UTF-8, CP850, ISO-8859-15', true );
 
-        return mb_convert_encoding($string, $to, $from);
+        return mb_convert_encoding( $string, $to, $from );
     }
 
     /**
@@ -222,17 +238,17 @@ class Str
      *
      * @return string
      */
-    public function generateTradeNo(int $length = 10): string
+    public function generateTradeNo( int $length = 10 ): string
     {
-        return date('YmdHis') . self::instance()->cut(
-            self::instance()->arrayToString(
-                array_map(
-                    'ord', str_split(
-                        self::instance()->cut(uniqid(), 6, 13), 1)
-                )),
-            0,
-            $length
-        );
+        return date( 'YmdHis' ) . self::instance()->cut(
+                self::instance()->arrayToString(
+                    array_map(
+                        'ord', str_split(
+                            self::instance()->cut( uniqid(), 6, 13 ), 1 )
+                    ) ),
+                0,
+                $length
+            );
     }
 
     /**
@@ -242,34 +258,36 @@ class Str
      *
      * @return string
      */
-    public function generateUid(string $prefix = ''): string
+    public function generateUid( string $prefix = '' ): string
     {
         return $prefix . self::instance()->arrayToString(
-            array_map(
-                'ord', str_split(
-                    self::instance()->cut(uniqid(), 6, 13), 1)
-            ));
+                array_map(
+                    'ord', str_split(
+                        self::instance()->cut( uniqid(), 6, 13 ), 1 )
+                ) );
     }
 
     /**
-     * 获取注册码|机器码类型：8E8363C1-094E0EDC-7D67C393
+     * Getting machine code, exp:8E8363C1-094E0EDC-7D67C393
      *
-     * @param  int|integer $block
-     * @param  int|integer $blockSize
-     * @param  string      $split
+     * @param int    $block
+     * @param int    $blockSize
+     * @param string $split
      *
      * @return string
+     * @throws \Exception
      */
-    public function getMachineCode(int $block = 3, int $blockSize = 8, string $split = '-'): string
+    public function getMachineCode( int $block = 3, int $blockSize = 8, string $split = '-' ): string
     {
         $result = [];
-        for ($i = 0; $i < $block; $i++) {
-            array_push($result, bin2hex((random_bytes($blockSize / 2))));
+        for ( $i = 0; $i < $block; $i++ )
+        {
+            array_push( $result, bin2hex( (random_bytes( $blockSize / 2 )) ) );
         }
 
-        $result = implode($split, $result);
+        $result = implode( $split, $result );
 
-        return strtoupper($result);
+        return strtoupper( $result );
     }
 
     /**
