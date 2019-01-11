@@ -11,7 +11,7 @@
  * | ---------------------------------------------------------------------------------------------------
  */
 
-namespace johnxu\payment;
+namespace johnxu\tool;
 
 class Config
 {
@@ -41,7 +41,7 @@ class Config
     /**
      * Set Config Value
      *
-     * @example \johnxu\payment\Config::getInstance()->set( 'wx.url', 'http://www.baidu.com' );
+     * @example \johnxu\tool\Config::getInstance()->set( 'wx.url', 'http://www.baidu.com' );
      *
      * @param string $name
      * @param mixed  $value
@@ -87,15 +87,16 @@ class Config
      * Get Config Value
      *
      * @example
-     * \johnxu\payment\Config::getInstance()->set( 'wx.url' ); // http://www.baidu.com
-     * \johnxu\payment\Config::getInstance()->set( 'wx' ); // array ('url' => 'http://www.baidu.com')
-     * \johnxu\payment\Config::getInstance()->set(); // array('wx' => array ('url' => 'http://www.baidu.com'))
+     * \johnxu\tool\Config::getInstance()->set( 'wx.url' ); // http://www.baidu.com
+     * \johnxu\tool\Config::getInstance()->set( 'wx' ); // array ('url' => 'http://www.baidu.com')
+     * \johnxu\tool\Config::getInstance()->set(); // array('wx' => array ('url' => 'http://www.baidu.com'))
      *
      * @param string $name
+     * @param mixed  $default
      *
      * @return array|mixed|string
      */
-    public function get( $name = '' )
+    public function get( $name = '', $default = '' )
     {
         if ( !$name )
         {
@@ -106,19 +107,29 @@ class Config
             if ( strpos( $name, '.' ) )
             {
                 $name  = explode( '.', $name );
-                $value = isset( $this->config[$name[0]] ) ? $this->config[$name[0]] : '';
+                $value = isset( $this->config[$name[0]] ) ? $this->config[$name[0]] : $default;
                 if ( count( $name ) > 1 && $value && is_array( $value ) )
                 {
-                    $value = isset( $value[$name[1]] ) ? $value[$name[1]] : '';
+                    $value = isset( $value[$name[1]] ) ? $value[$name[1]] : $default;
                 }
 
                 return $value;
             }
             else
             {
-                return isset( $this->config[$name] ) ? $this->config[$name] : '';
+                return isset( $this->config[$name] ) ? $this->config[$name] : $default;
             }
         }
+    }
+
+    /**
+     * Batch Config
+     *
+     * @param array $config
+     */
+    public function batch( array $config )
+    {
+        $this->config = array_merge( $this->config, $config );
     }
 
     /**
@@ -129,8 +140,23 @@ class Config
      *
      * @return bool
      */
-    public function has( $name, $value )
+    public function has( $name, $value = null )
     {
-        return $this->get( $name ) && $this->get( $name ) == $value;
+        if ( $result = $this->get( $name ) )
+        {
+            return $result;
+        }
+        else
+        {
+            if ( $value && $value == $this->get( $name ) )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }
+
