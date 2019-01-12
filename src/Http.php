@@ -42,7 +42,7 @@ class Http
      * @return Http
      * @throws \Exception
      */
-    public function request( string $uri, array $data = [], string $method = 'get', bool $secret = null, string $key = null ): Http
+    public function request( string $uri, $data = [], string $method = 'get', bool $secret = null, string $key = null ): Http
     {
         $method = strtoupper( $method );
         $ch     = curl_init();
