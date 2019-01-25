@@ -216,3 +216,21 @@ var_dump($crypted);
 $decrypted = Rsa::decrypt($crypted, $publicKey, false);
 var_dump($decrypted);
 ```
+
+## 用户授权管理
+```php
+<?php
+
+class Users extends \johnxu\tool\Api
+{
+    public function authorization()
+    {
+	  parent::authorization(); // 继承就行了
+	}
+	
+	public function register()
+	{
+	  parent::register(); // 继承就行了
+	}
+}
+```

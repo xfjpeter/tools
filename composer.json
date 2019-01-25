@@ -1,21 +1,27 @@
 {
-    "name": "johnxu/tool",
-    "description": "常用工具包",
-    "keywords": ["tool","许发君","johnxu","工具类"],
-    "homepage": "https://www.johnxu.net",
-    "authors": [
-        {
-            "name": "johnxu",
-            "email": "fsyzxz@163.com"
-        }
-    ],
-    "require" : {
-        "php" : ">=7.0.0"
-    },
-    "require-dev": {},
-    "autoload": {
-        "psr-4": {
-            "johnxu\\tool\\": "src/"
-        }
+  "name": "johnxu/tool",
+  "description": "常用工具包",
+  "keywords": [
+    "tool",
+    "许发君",
+    "johnxu",
+    "工具类"
+  ],
+  "homepage": "https://www.johnxu.net",
+  "authors": [
+    {
+      "name": "johnxu",
+      "email": "fsyzxz@163.com"
     }
+  ],
+  "require": {
+    "php": ">=7.0.0"
+  },
+  "require-dev": {},
+  "autoload": {
+    "psr-4": {
+      "johnxu\\tool\\": "src/"
+    }
+  },
+  "license": "MIT"
 }
