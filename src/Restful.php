@@ -18,6 +18,22 @@ use think\Response;
 
 abstract class Restful
 {
+    const HTTP_RESPONSE_OK      = 200; // OK
+    const HTTP_RESPONSE_CREATED = 201; // POST Created
+    const HTTP_RESPONSE_UPDATED = 204; // PUT Updated
+
+    const HTTP_RESPONSE_REDIRECT = 301; // Moved Permanently
+
+    const HTTP_RESPONSE_PARAM_ERROR      = 400; // Request Params Error
+    const HTTP_RESPONSE_UN_AUTHORIZATION = 401; // UnAuthorization
+    const HTTP_RESPONSE_FORBIDDEN        = 403; // Forbidden
+    const HTTP_RESPONSE_NOT_FOUND        = 404; // Not found
+    const HTTP_RESPONSE_TIMEOUT          = 408; // Request timeout
+    const HTTP_RESPONSE_EXISTS           = 409; // Resource Exists
+    const HTTP_RESPONSE_FILE_TOO_LARGE   = 413; // Upload file too large
+
+    const HTTP_RESPONSE_SERVER_ERROR    = 500; // Internal Server Error
+    const HTTP_RESPONSE_SERVER_UPGRADED = 503; // Service Unavailable
 
     /**
      * @var string 返回类型
@@ -30,7 +46,7 @@ abstract class Restful
      * @param int   $responseCode 状态码
      * @param array $data         返回的数据
      */
-    protected function ok( int $responseCode, array $data )
+    final protected function ok( int $responseCode, array $data )
     {
         $this->result( $responseCode, $data );
     }
@@ -43,7 +59,7 @@ abstract class Restful
      * @param string $message      错误消息
      * @param array  $data         额外数据
      */
-    protected function fail( int $responseCode, int $errCode, string $message, array $data = [] )
+    final protected function fail( int $responseCode, int $errCode, string $message, array $data = [] )
     {
         $this->result( $responseCode, $data, $errCode, $message );
     }
@@ -56,7 +72,7 @@ abstract class Restful
      * @param int         $errCode      错误码
      * @param string|null $message      消息
      */
-    protected function result( int $responseCode, array $data = [], int $errCode = null, string $message = null )
+    final protected function result( int $responseCode, array $data = [], int $errCode = null, string $message = null )
     {
         if ( !headers_sent() )
         {
