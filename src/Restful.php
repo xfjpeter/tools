@@ -18,6 +18,7 @@ use think\Response;
 
 abstract class Restful
 {
+    // 定义返回状态码
     const HTTP_RESPONSE_OK      = 200; // OK
     const HTTP_RESPONSE_CREATED = 201; // POST Created
     const HTTP_RESPONSE_UPDATED = 204; // PUT Updated
@@ -44,9 +45,9 @@ abstract class Restful
      * 返回正确值
      *
      * @param int   $responseCode 状态码
-     * @param array $data         返回的数据
+     * @param mixed $data         返回的数据
      */
-    final protected function ok( int $responseCode, array $data )
+    final protected function ok( int $responseCode, $data = '' )
     {
         $this->result( $responseCode, $data );
     }
@@ -57,9 +58,9 @@ abstract class Restful
      * @param int    $responseCode 状态码
      * @param  int   $errCode      失败码
      * @param string $message      错误消息
-     * @param array  $data         额外数据
+     * @param mixed  $data         额外数据
      */
-    final protected function fail( int $responseCode, int $errCode, string $message, array $data = [] )
+    final protected function fail( int $responseCode, int $errCode, string $message, $data = '' )
     {
         $this->result( $responseCode, $data, $errCode, $message );
     }
@@ -68,11 +69,11 @@ abstract class Restful
      * 返回api数据
      *
      * @param int         $responseCode 状态码
-     * @param array       $data         返回数据
+     * @param mixed       $data         返回数据
      * @param int         $errCode      错误码
      * @param string|null $message      消息
      */
-    final protected function result( int $responseCode, array $data = [], int $errCode = null, string $message = null )
+    final protected function result( int $responseCode, $data = '', int $errCode = null, string $message = null )
     {
         if ( !headers_sent() )
         {

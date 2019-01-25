@@ -77,22 +77,29 @@ class Api extends Restful
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
+     * @throws \ReflectionException
      */
     public function __construct()
     {
         $this->request = Container::get( 'request' );
 
+        // 验证登录
         $this->verifyLogin();
+
+        // 验证权限
+        $this->verifyAuth();
     }
 
     /**
      * 注册绑定
      *
+     * @login false
+     *
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    protected function register()
+    public function register()
     {
         $username = $this->request->post( 'username' );
         $password = $this->request->post( 'password' );
@@ -131,11 +138,13 @@ class Api extends Restful
     /**
      * 授权登录
      *
+     * @login false
+     *
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    protected function authorization()
+    public function authorization()
     {
         // authorization 授权
         if ( $username = $this->request->server( 'PHP_AUTH_USER' ) )
@@ -172,6 +181,19 @@ class Api extends Restful
             // 授权成功
             $this->ok( self::HTTP_RESPONSE_OK, $this->auth( $user['id'], $user ) );
         }
+    }
+
+    /**
+     * 退出登录
+     *
+     * @throws \think\Exception
+     * @throws \think\exception\PDOException
+     */
+    public function logout()
+    {
+        Db::name( $this->tableToken )->where( [ 'user_id' => $this->auth['id'] ] )->delete();
+
+        $this->ok( self::HTTP_RESPONSE_UPDATED, [] );
     }
 
     /**
@@ -241,6 +263,32 @@ class Api extends Restful
                     $this->auth = Db::name( $this->tableUser )->hidden( [ 'password' ] )->where( [ 'id' => $res['user_id'] ] )->find();
                 }
             }
+        }
+    }
+
+    /**
+     * verify auth
+     *
+     * @throws \ReflectionException
+     */
+    protected function verifyAuth()
+    {
+        $reflection = new \ReflectionMethod( $this, $this->request->action() );
+        $document   = $reflection->getDocComment();
+        if ( $document )
+        {
+            if ( preg_match( '/\@login\s+(true|false)/', $document, $res ) )
+            {
+                if ( isset( $res[1] ) || $res[1] == 'false' )
+                {
+                    return;
+                }
+            }
+        }
+
+        if ( !$this->auth )
+        {
+            $this->fail( self::HTTP_RESPONSE_UN_AUTHORIZATION, 1002, 'Unauthorized' );
         }
     }
 }

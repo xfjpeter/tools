@@ -222,15 +222,23 @@ var_dump($decrypted);
 <?php
 
 class Users extends \johnxu\tool\Api
-{
-    public function authorization()
-    {
-	  parent::authorization(); // 继承就行了
-	}
-	
-	public function register()
+{	
+	/**
+	 * @login true 
+     */
+	public function needLogin()
 	{
-	  parent::register(); // 继承就行了
+	    return '需要验证登录的';
+	}
+	/**
+	 * @login false
+     */
+	public function noNeedLogin()
+	{
+	    return '不需要登录的';
 	}
 }
+// curl -i -u fsyzxz@163.com localhost:8000/api/users/authorization // 登录
+// POST http://localhost:8000/api/users/register {username: "xfjpeter@163.com", password: 123456} // 注册
+// POST|GET http://localhost:8000/api/users/logout // 退出登录
 ```
