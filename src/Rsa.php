@@ -7,110 +7,176 @@
 
 namespace johnxu\tool;
 
-class Rsa
+final class Rsa
 {
-    private static $instance;
 
     /**
-     * 获取对象
+     * signature
      *
-     * @access public
-     * @return Rsa
-     */
-    public static function getInstance()
-    {
-        if ( !self::$instance instanceof self )
-        {
-            self::$instance = new self;
-        }
-
-        return self::$instance;
-    }
-
-    /**
-     * RSA数据签名
+     * @param string $data
+     * @param string $privateKey Private key or Private key path.
+     * @param string $signType   RSA or RSA2
      *
-     * @param String $data        需要签名的数据
-     * @param String $private_key 需要签名的私钥
-     * @param string $type        签名类型（RSA或RSA2）
-     *
-     * @return string 返回的签名串
+     * @return string
      * @throws \Exception
      */
-    public static function sign( String $data, String $private_key, $type = 'RSA' )
+    public static function signature( string $data, string $privateKey, $signType = 'RSA2' )
     {
-        $search = [
-            "-----BEGIN RSA PRIVATE KEY-----",
-            "-----END RSA PRIVATE KEY-----",
-            "\n",
-            "\r",
-            "\r\n",
-        ];
-        if ( is_file( $private_key ) )
+        $privateKey   = self::getPrivateKey( $privateKey );
+        $privateKeyId = openssl_pkey_get_private( $privateKey );
+        if ( !$privateKeyId )
         {
-            $private_key = file_get_contents( $private_key );
+            throw new Exception( 'Private key is error.' );
         }
-        else
+        $flag = openssl_sign( $data, $signature, $privateKeyId, ($signType == 'RSA2' ? OPENSSL_ALGO_SHA256 : OPENSSL_ALGO_SHA1) );
+
+        if ( !$flag )
         {
-            $private_key = str_replace( $search, '', $private_key );
-            $private_key = $search[0] . PHP_EOL . wordwrap( $private_key, 64, "\n", true ) . PHP_EOL . $search[1];
-        }
-        $res = openssl_pkey_get_private( $private_key );
-        if ( $res )
-        {
-            $type == 'RSA' ? openssl_sign( $data, $signature, $res ) : openssl_sign( $data, $signature, $res, OPENSSL_ALGO_SHA256 );
-            openssl_pkey_free( $res );
-        }
-        else
-        {
-            throw new \Exception( 'private key error !' );
+            throw new \Exception( 'Signature fail,' );
         }
 
         return base64_encode( $signature );
     }
 
-    /**验证签名是否正确
+    /**
      *
-     * @param String $data       需要验证签名的数据
-     * @param String $public_key 签名的公钥
-     * @param String $signature  签名串
-     * @param string $type       签名类型（RSA或RSA2）
      *
-     * @return bool 返回状态
+     * @param string $data
+     * @param string $signature
+     * @param string $publicKey
+     * @param string $signType
+     *
+     * @return bool
      * @throws \Exception
      */
-    public function check( String $data, String $public_key, String $signature, $type = 'RSA' )
+    public static function verify( string $data, string $signature, string $publicKey, $signType = 'RSA2' )
     {
-        $search = [
-            "-----BEGIN PUBLIC KEY-----",
-            "-----END PUBLIC KEY-----",
-            "\n",
-            "\r",
-            "\r\n",
-        ];
-        if ( is_file( $public_key ) )
+        $publicKey   = self::getPublicKey( $publicKey );
+        $publicKeyId = openssl_pkey_get_public( $publicKey );
+        if ( !$publicKeyId )
         {
-            $public_key = file_get_contents( $public_key );
+            throw new \Exception( 'Public key is error.' );
         }
-        else
+        $flag = openssl_verify( $data, base64_decode( $signature ), $publicKeyId, ($signType == 'RSA2' ? OPENSSL_ALGO_SHA256 : OPENSSL_ALGO_SHA1) );
+
+        if ( $flag !== 1 )
         {
-            $public_key = str_replace( $search, '', $public_key );
-            $public_key = $search[0] . PHP_EOL . wordwrap( $public_key, 64, "\n", true ) . PHP_EOL . $search[1];
-        }
-        $res = openssl_pkey_get_public( $public_key );
-        if ( $res )
-        {
-            $result = $type == 'RSA'
-                ? (bool) openssl_verify( $data, base64_decode( $signature ), $public_key )
-                : (bool) openssl_verify( $data,
-                    base64_decode( $signature ), $public_key, OPENSSL_ALGO_SHA256 );
-            openssl_pkey_free( $res );
-        }
-        else
-        {
-            throw new \Exception( 'public key error or signature error or data error !' );
+            throw new \Exception( 'Verify fail.' );
         }
 
-        return $result;
+        return true;
+    }
+
+    /**
+     * encrypted by public key or private key
+     *
+     * @param string  $data
+     * @param string  $key
+     * @param boolean $public
+     *
+     * @return string
+     * @throws \Exception
+     */
+    public static function encrypt( string $data, string $key, bool $public = true )
+    {
+        if ( $public )
+        {
+            $flag = openssl_public_encrypt( $data, $crypted, self::getPublicKey( $key ) );
+        }
+        else
+        {
+            $flag = openssl_private_encrypt( $data, $crypted, self::getPrivateKey( $key ) );
+        }
+
+        if ( !$flag )
+        {
+            throw new \Exception( 'Public key or Private key error.' );
+        }
+
+        return base64_encode( $crypted );
+    }
+
+    /**
+     * decrypted by public key or private key
+     *
+     * @param string  $data
+     * @param string  $key
+     * @param boolean $private
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function decrypt( string $data, string $key, bool $private = true )
+    {
+        $data = base64_decode( $data );
+        if ( $private )
+        {
+            $flag = openssl_private_decrypt( $data, $decrypted, self::getPrivateKey( $key ) );
+        }
+        else
+        {
+            $flag = openssl_public_decrypt( $data, $decrypted, self::getPublicKey( $key ) );
+        }
+
+        if ( !$flag )
+        {
+            throw new \Exception( 'Public key or Private key error.' );
+        }
+
+        return $decrypted;
+    }
+
+    /**
+     * 格式化公钥
+     *
+     * @param string $param
+     *
+     * @return mixed|string
+     */
+    public static function getPublicKey( string $param ): string
+    {
+        if ( is_file( $param ) )
+        {
+            $param = file_get_contents( $param );
+        }
+        $replaceTpl = array(
+            "-----BEGIN PUBLIC KEY-----",
+            "-----END PUBLIC KEY-----",
+            "\r",
+            "\n",
+            "\r\n"
+        );
+        // 替换掉所有的模板内容
+        $publicKey = str_replace( $replaceTpl, '', $param );
+        // 拼接成public_key格式
+        $publicKey = $replaceTpl[0] . PHP_EOL . wordwrap( $publicKey, 64, "\n", true ) . PHP_EOL . $replaceTpl[1];
+
+        return $publicKey;
+    }
+
+    /**
+     * 格式化私钥文件
+     *
+     * @param string $param
+     *
+     * @return string
+     */
+    public static function getPrivateKey( string $param ): string
+    {
+        if ( is_file( $param ) )
+        {
+            $param = file_get_contents( $param );
+        }
+        $replaceTpl = array(
+            "-----BEGIN PRIVATE KEY-----",
+            "-----END PRIVATE KEY-----",
+            "\r",
+            "\n",
+            "\r\n"
+        );
+        $privateKey = str_replace( $replaceTpl, '', $param );
+        $privateKey = $replaceTpl[0] . PHP_EOL . wordwrap( $privateKey, 64, "\n", true ) . PHP_EOL . $replaceTpl[1];
+
+        return $privateKey;
     }
 }

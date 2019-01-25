@@ -172,3 +172,47 @@ Route::group( 'v1', function () {
 // 获取所有用户：GET http://localhost/v1/useres
 // 获取指定用户：GET http://localhost/v1/users/1
 ```
+
+## RSA签名和验签
+```php
+<?php
+use johnxu\tool\Rsa;
+
+$publicKey = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC/ykZnOUb0ro7WaraW+aPyNCgZgJyvr2CIQhTLRvOeOW4Ba8FaudwWACL0QFfIjW+V3rqMG0SPHGIitHUXIH0tzQZoKp8FfZVQOZxNyBaIjwzgSvuZuBGYZ/rrH53158t7gt58IIHGxcfJehhex/0bk8rUAO2U5kKGKwvEbDMOXwIDAQAB';
+$privateKey = 'MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAL/KRmc5RvSujtZqtpb5o/I0KBmAnK+vYIhCFMtG8545bgFrwVq53BYAIvRAV8iNb5XeuowbRI8cYiK0dRcgfS3NBmgqnwV9lVA5nE3IFoiPDOBK+5m4EZhn+usfnfXny3uC3nwggcbFx8l6GF7H/RuTytQA7ZTmQoYrC8RsMw5fAgMBAAECgYA1T5ucS86OawsnTMhuVPweciMHW7myGBTEK2IuUw2a2KncWUCI4IrtzqHotQ3xoGb5CM1f7qBzC1e3/+NgR1aj7laAXtg/S1mfJISMIoXkUi/9q+4GwbbaU/vkYyhqnoAa5tL7/X4wuRlWtc7tC9TyqS+EXOa990SZOpuHjqpCiQJBAOLV1+ISWa30MMFWeTD5L6SP6BAE2mrgt6ZaRL2hGUp9QxWX2o89/cne4FEa0RrI1gLfOYHEoHhw5lqSMHHpGJMCQQDYcvBp7idMecg9+NcI1F+P1EDtNsMgpiXmAdV8sNpv/TbhzarLHh7bTnHrg7e2QRhUBuoZmU8Rx3FsUu41Qc6FAkBQyZKKvLhd4QNgSFj/XTBfrrUax2+28vPVdn7W/sJQKk6zKRM5Qv3ZYNyJZkClBnRaL4B+vDXez27rQPeqCjerAkAv9+kH0NusuyCBe3BMaKR0/5kT+RrtVWT4wFdLtvXx87ACAs5jDV3RRGVCyIIiRfLaTF39Jli7m/OrCgX4j4jxAkEAspLOMeD7ZH97cR+Mi3iHnweCQ86tZ6UNCc2+pC7murjpZs+fBP/zDeLTjYmX22QZb1KvPTeAnKkQ2OuyUdTN/w==';
+
+// 私钥签名
+$signature = Rsa::signature('123', $privateKey, 'RSA2');
+var_dump($signature);
+
+// 公钥验签
+$flag = Rsa::verify($signature, $publicKey, 'RSA2');
+var_dump($flag);
+```
+
+## RSA加密与解密
+```php
+<?php
+use johnxu\tool\Rsa;
+
+$publicKey = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC/ykZnOUb0ro7WaraW+aPyNCgZgJyvr2CIQhTLRvOeOW4Ba8FaudwWACL0QFfIjW+V3rqMG0SPHGIitHUXIH0tzQZoKp8FfZVQOZxNyBaIjwzgSvuZuBGYZ/rrH53158t7gt58IIHGxcfJehhex/0bk8rUAO2U5kKGKwvEbDMOXwIDAQAB';
+$privateKey = 'MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAL/KRmc5RvSujtZqtpb5o/I0KBmAnK+vYIhCFMtG8545bgFrwVq53BYAIvRAV8iNb5XeuowbRI8cYiK0dRcgfS3NBmgqnwV9lVA5nE3IFoiPDOBK+5m4EZhn+usfnfXny3uC3nwggcbFx8l6GF7H/RuTytQA7ZTmQoYrC8RsMw5fAgMBAAECgYA1T5ucS86OawsnTMhuVPweciMHW7myGBTEK2IuUw2a2KncWUCI4IrtzqHotQ3xoGb5CM1f7qBzC1e3/+NgR1aj7laAXtg/S1mfJISMIoXkUi/9q+4GwbbaU/vkYyhqnoAa5tL7/X4wuRlWtc7tC9TyqS+EXOa990SZOpuHjqpCiQJBAOLV1+ISWa30MMFWeTD5L6SP6BAE2mrgt6ZaRL2hGUp9QxWX2o89/cne4FEa0RrI1gLfOYHEoHhw5lqSMHHpGJMCQQDYcvBp7idMecg9+NcI1F+P1EDtNsMgpiXmAdV8sNpv/TbhzarLHh7bTnHrg7e2QRhUBuoZmU8Rx3FsUu41Qc6FAkBQyZKKvLhd4QNgSFj/XTBfrrUax2+28vPVdn7W/sJQKk6zKRM5Qv3ZYNyJZkClBnRaL4B+vDXez27rQPeqCjerAkAv9+kH0NusuyCBe3BMaKR0/5kT+RrtVWT4wFdLtvXx87ACAs5jDV3RRGVCyIIiRfLaTF39Jli7m/OrCgX4j4jxAkEAspLOMeD7ZH97cR+Mi3iHnweCQ86tZ6UNCc2+pC7murjpZs+fBP/zDeLTjYmX22QZb1KvPTeAnKkQ2OuyUdTN/w==';
+
+// 公钥加密 === 私钥解密
+// 公钥加密
+$crypted = Rsa::encrypt('123', $publicKey);
+var_dump($crypted);
+
+// 私钥解密
+$decrypted = Rsa::decrypt($crypted, $privateKey);
+var_dump($decrypted);
+
+// 私钥加密 === 公钥解密
+// 私钥加密
+$crypted = Rsa::encrypt('123', $privateKey, false);
+var_dump($crypted);
+
+// 公钥解密
+$decrypted = Rsa::decrypt($crypted, $publicKey, false);
+var_dump($decrypted);
+```
