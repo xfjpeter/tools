@@ -90,7 +90,10 @@ abstract class Restful
                 'err_code' => $errCode,
                 'message'  => $message
             ];
-            $result = array_merge( $result, $data );
+            if ( is_array( $data ) )
+            {
+                $result = array_merge( $result, $data );
+            }
         }
 
         $response = Response::create( $result, $this->responseType, $responseCode );
