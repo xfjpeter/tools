@@ -173,7 +173,6 @@ class Api extends Restful
         }
         else
         {
-            var_dump( method_exists( $this, 'authorizationSuccess' ) );
             if ( method_exists( $this, 'authorizationSuccess' ) )
             {
                 $this->authorizationSuccess( $user );
