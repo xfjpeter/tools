@@ -242,3 +242,72 @@ class Users extends \johnxu\tool\Api
 // POST http://localhost:8000/api/users/register {username: "xfjpeter@163.com", password: 123456} // 注册
 // POST|GET http://localhost:8000/api/users/logout // 退出登录
 ```
+
+## Hash加密和验证
+
+```php
+<?php
+// Hash加密
+$hashStr = \johnxu\tool\Hash::make('123');
+var_dump($hashStr);
+
+// 验证hash加密是否正确
+$result = \johnxu\tool\Hash::check('123', $hashStr);
+var_dump($result);
+```
+
+## 时间操作
+
+```php
+<?php
+use johnxu\tool\Time;
+// 获取今天的时间戳（开始，结束）
+$today = Time::today();
+print_r( $today );
+/**
+ * Array
+ * (
+ * [0] => 1551139200
+ * [1] => 1551225599
+ * )
+ */
+
+// 获取昨天的时间戳（开始，结束）
+$yesterday = Time::yesterday();
+
+// 获取本周开始和结束的时间戳
+$week = Time::week();
+
+// 上周开始和结束的时间戳
+$lastWeek = Time::lastWeek();
+
+// 本月开始和结束的时间戳
+Time::month();
+
+// 上月开始和结束的时间戳
+Time::lastMonth();
+
+// 今年开始和结束的时间戳
+Time::year();
+
+// 去年开始和结束的时间戳
+Time::lastYear();
+
+// 获取7天前零点到现在的时间戳
+Time::dayToNow(7);
+
+// 获取7天前零点到昨日结束的时间戳
+Time::dayToNow(7, true);
+
+// 获取7天前的时间戳
+Time::daysAgo(7);
+
+//  获取7天后的时间戳
+Time::daysAfter(7);
+
+// 天数转换成秒数
+Time::daysToSecond(5);
+
+// 周数转换成秒数
+Time::weekToSecond(5);
+```
