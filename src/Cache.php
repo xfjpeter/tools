@@ -57,8 +57,7 @@ class Cache
      */
     public static function getInstance()
     {
-        if ( !static::$instance instanceof static )
-        {
+        if (!static::$instance instanceof static) {
             static::$instance = new static();
         }
 
@@ -70,23 +69,20 @@ class Cache
      *
      * @access public
      *
-     * @param  string $key
-     * @param  mixed  $value
-     * @param string  $scope
+     * @param string $key
+     * @param mixed  $value
+     * @param string $scope
      *
      * @return mixed
      */
-    public function set( string $key, $value, $scope = 'default' )
+    public function set(string $key, $value, $scope = 'default')
     {
         static::getInstance()->scope = $scope;
 
-        if ( static::getInstance()->setContent( $key, $value ) )
-        {
+        if (static::getInstance()->setContent($key, $value)) {
 
-            return static::get( $key, $scope );
-        }
-        else
-        {
+            return static::get($key, $scope);
+        } else {
             static::getInstance()->error = '写入文件缓存文件失败';
 
             return false;
@@ -96,58 +92,44 @@ class Cache
     /**
      * 获取缓存内容
      *
-     * @param  string $key
-     * @param string  $scope
+     * @param string $key
+     * @param string $scope
      *
      * @return null
      */
-    public function get( string $key, $scope = 'default' )
+    public function get(string $key, $scope = 'default')
     {
         static::getInstance()->scope = $scope;
         $content                     = static::getInstance()->getContent();
         // 判断文件是否过期
         $filename = $this->getFileName();
-        if ( !$content )
-        {
+        if (!$content) {
             return null;
         }
-        if ( $content['expire'] == 0 )
-        {
-            if ( strpos( $key, '.' ) )
-            {
-                $keys = explode( '.', $key );
+        if ($content['expire'] == 0) {
+            if (strpos($key, '.')) {
+                $keys = explode('.', $key);
                 $tmp  = $content['data'];
-                foreach ( $keys as $item )
-                {
-                    if ( isset( $tmp[$item] ) )
-                    {
+                foreach ($keys as $item) {
+                    if (isset($tmp[$item])) {
                         $tmp = $tmp[$item];
-                    }
-                    else
-                    {
+                    } else {
                         return null;
                     }
                 }
-            }
-            else
-            {
-                $tmp = isset( $content['data'][$key] ) ? $content['data'][$key] : null;
+            } else {
+                $tmp = isset($content['data'][$key]) ? $content['data'][$key] : null;
             }
 
             return $tmp;
-        }
-        else
-        {
-            if ( time() - filectime( $filename ) > $content['expire'] )
-            {
+        } else {
+            if (time() - filectime($filename) > $content['expire']) {
                 // 删除文件
-                unlink( $filename );
+                unlink($filename);
                 static::getInstance()->error = '文件已过期';
 
                 return null;
-            }
-            else
-            {
+            } else {
                 static::getInstance()->error = '读取缓存文件失败';
 
                 return null;
@@ -165,9 +147,9 @@ class Cache
      *
      * @return mixed
      */
-    public function delete( string $key, $scope = 'default' )
+    public function delete(string $key, $scope = 'default')
     {
-        return static::getInstance()->set( $key, null, $scope );
+        return static::getInstance()->set($key, null, $scope);
     }
 
     /**
@@ -177,16 +159,13 @@ class Cache
      *
      * @return bool
      */
-    public function clear( $scope = 'default' )
+    public function clear($scope = 'default')
     {
         static::getInstance()->scope = $scope;
         $filename                    = static::getInstance()->getFileName();
-        if ( is_file( $filename ) )
-        {
-            return unlink( $filename );
-        }
-        else
-        {
+        if (is_file($filename)) {
+            return unlink($filename);
+        } else {
             return false;
         }
     }
@@ -211,39 +190,32 @@ class Cache
      *
      * @return bool
      */
-    private function setContent( string $key, $data ): bool
+    private function setContent(string $key, $data): bool
     {
         $filename = static::getInstance()->getFileName();
         // 如何文件夹不存在，创建
-        if ( !is_dir( static::getInstance()->path ) )
-        {
-            static::getInstance()->mkdirs( static::getInstance()->path );
+        if (!is_dir(static::getInstance()->path)) {
+            static::getInstance()->mkdirs(static::getInstance()->path);
         }
         $content = static::getInstance()->getContent();
-        if ( $content )
-        {
+        if ($content) {
             $content['data'][$key] = $data;
             $data                  = $content;
-        }
-        else
-        {
+        } else {
             $data = [
                 'data'   => [
                     $key => $data,
                 ],
-                'expire' => static::getInstance()->timeout
+                'expire' => static::getInstance()->timeout,
             ];
         }
-        $fp = fopen( $filename, 'w' );
-        if ( $fp )
-        {
-            fwrite( $fp, serialize( $data ) );
-            fclose( $fp );
+        $fp = fopen($filename, 'w');
+        if ($fp) {
+            fwrite($fp, serialize($data));
+            fclose($fp);
 
             return true;
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
@@ -257,26 +229,22 @@ class Cache
     private function getContent()
     {
         $filename = static::getInstance()->getFileName();
-        if ( !is_file( $filename ) )
-        {
+        if (!is_file($filename)) {
             return null;
         }
-        $fp      = fopen( $filename, 'r' );
+        $fp      = fopen($filename, 'r');
         $content = '';
-        if ( $fp )
-        {
-            while ( ($buffer = fgets( $fp, 4096 )) !== false )
-            {
+        if ($fp) {
+            while (($buffer = fgets($fp, 4096)) !== false) {
                 $content .= $buffer;
             }
-            if ( !feof( $fp ) )
-            {
+            if (!feof($fp)) {
                 static::getInstance()->error = '读取文件出现异常';
             }
-            fclose( $fp );
+            fclose($fp);
         }
 
-        return unserialize( $content );
+        return unserialize($content);
     }
 
     /**
@@ -287,7 +255,8 @@ class Cache
      */
     private function getFileName()
     {
-        return static::getInstance()->path . hash_hmac( 'sha1', static::getInstance()->scope, static::getInstance()->key, false ) . static::getInstance()->ext;
+        return static::getInstance()->path.hash_hmac('sha1', static::getInstance()->scope, static::getInstance()->key,
+                false).static::getInstance()->ext;
     }
 
     /**
@@ -299,16 +268,13 @@ class Cache
      *
      * @return bool
      */
-    private function mkdirs( string $path ): bool
+    private function mkdirs(string $path): bool
     {
-        if ( !is_dir( $path ) )
-        {
-            if ( !static::getInstance()->mkdirs( dirname( $path ) ) )
-            {
+        if (!is_dir($path)) {
+            if (!static::getInstance()->mkdirs(dirname($path))) {
                 return false;
             }
-            if ( !mkdir( $path, 0777 ) )
-            {
+            if (!mkdir($path, 0777)) {
                 return false;
             }
         }

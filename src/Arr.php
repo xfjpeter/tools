@@ -5,44 +5,28 @@
  * | ---------------------------------------------------------------------------------------------------
  * | Home: https://www.johnxu.net.
  * | ---------------------------------------------------------------------------------------------------
- * | Data: 2019/2/26
+ * | Data: 2019-04-12
  * | ---------------------------------------------------------------------------------------------------
- * | Desc: Hash加密
+ * | Desc: 数组操作类
  * | ---------------------------------------------------------------------------------------------------
  */
 
 namespace johnxu\tool;
 
-/**
- * Class Hash
- *
- * @package johnxu\tool
- */
-class Hash
+class Arr
 {
     /**
-     * hash加密
-     *
-     * @param string $value
-     * @param int    $cost
-     *
-     * @return string
+     * 多维数组根据指定字段排序
+     * @param array  $data
+     * @param string $field
+     * @param int    $sortBy
+     * @return array
      */
-    public static function make(string $value, int $cost = 10): string
+    public static function multiSortByField(array $data, string $field, $sortBy = SORT_ASC): array
     {
-        return password_hash($value, PASSWORD_BCRYPT, ['cost' => $cost]);
-    }
+        $rank = array_column($data, $field);
+        array_multisort($rank, $sortBy, $data);
 
-    /**
-     * 验证hash加密是否正确
-     *
-     * @param string $value
-     * @param string $hashValue
-     *
-     * @return bool
-     */
-    public static function check(string $value, string $hashValue): bool
-    {
-        return password_verify($value, $hashValue);
+        return $data;
     }
 }

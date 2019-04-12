@@ -30,8 +30,7 @@ class Config
      */
     public static function getInstance()
     {
-        if ( !self::$instance instanceof self )
-        {
+        if (!self::$instance instanceof self) {
             self::$instance = new self();
         }
 
@@ -41,43 +40,31 @@ class Config
     /**
      * Set Config Value
      *
-     * @example \johnxu\tool\Config::getInstance()->set( 'wx.url', 'http://www.baidu.com' );
-     *
      * @param string $name
      * @param mixed  $value
+     * @example \johnxu\tool\Config::getInstance()->set( 'wx.url', 'http://www.baidu.com' );
+     *
      */
-    public function set( $name, $value )
+    public function set($name, $value)
     {
-        if ( strpos( $name, '.' ) )
-        {
-            $name = explode( '.', $name );
+        if (strpos($name, '.')) {
+            $name = explode('.', $name);
+        } else {
+            $name = array($name);
         }
-        else
-        {
-            $name = array( $name );
-        }
-        if ( in_array( $name[0], array_keys( $this->config ) ) )
-        {
+        if (in_array($name[0], array_keys($this->config))) {
             // 判断二级name是否存在
-            if ( in_array( $name[1], array_keys( $this->config[$name[0]] ) ) )
-            {
+            if (in_array($name[1], array_keys($this->config[$name[0]]))) {
                 $this->config[$name[0]][$name[1]] = $value;
-            }
-            else
-            {
+            } else {
                 $this->config[$name[0]] = $value;
             }
-        }
-        else
-        {
-            if ( count( $name ) > 1 )
-            {
+        } else {
+            if (count($name) > 1) {
                 $this->config[$name[0]] = array(
-                    $name[1] => $value
+                    $name[1] => $value,
                 );
-            }
-            else
-            {
+            } else {
                 $this->config[$name[0]] = $value;
             }
         }
@@ -86,38 +73,31 @@ class Config
     /**
      * Get Config Value
      *
+     * @param string $name
+     * @param mixed  $default
+     *
+     * @return array|mixed|string
      * @example
      * \johnxu\tool\Config::getInstance()->set( 'wx.url' ); // http://www.baidu.com
      * \johnxu\tool\Config::getInstance()->set( 'wx' ); // array ('url' => 'http://www.baidu.com')
      * \johnxu\tool\Config::getInstance()->set(); // array('wx' => array ('url' => 'http://www.baidu.com'))
      *
-     * @param string $name
-     * @param mixed  $default
-     *
-     * @return array|mixed|string
      */
-    public function get( $name = '', $default = '' )
+    public function get($name = '', $default = '')
     {
-        if ( !$name )
-        {
+        if (!$name) {
             return $this->config;
-        }
-        else
-        {
-            if ( strpos( $name, '.' ) )
-            {
-                $name  = explode( '.', $name );
-                $value = isset( $this->config[$name[0]] ) ? $this->config[$name[0]] : $default;
-                if ( count( $name ) > 1 && $value && is_array( $value ) )
-                {
-                    $value = isset( $value[$name[1]] ) ? $value[$name[1]] : $default;
+        } else {
+            if (strpos($name, '.')) {
+                $name  = explode('.', $name);
+                $value = isset($this->config[$name[0]]) ? $this->config[$name[0]] : $default;
+                if (count($name) > 1 && $value && is_array($value)) {
+                    $value = isset($value[$name[1]]) ? $value[$name[1]] : $default;
                 }
 
                 return $value;
-            }
-            else
-            {
-                return isset( $this->config[$name] ) ? $this->config[$name] : $default;
+            } else {
+                return isset($this->config[$name]) ? $this->config[$name] : $default;
             }
         }
     }
@@ -127,9 +107,9 @@ class Config
      *
      * @param array $config
      */
-    public function batch( array $config )
+    public function batch(array $config)
     {
-        $this->config = array_merge( $this->config, $config );
+        $this->config = array_merge($this->config, $config);
     }
 
     /**
@@ -140,20 +120,14 @@ class Config
      *
      * @return bool
      */
-    public function has( $name, $value = null )
+    public function has($name, $value = null)
     {
-        if ( $result = $this->get( $name ) )
-        {
+        if ($result = $this->get($name)) {
             return $result;
-        }
-        else
-        {
-            if ( $value && $value == $this->get( $name ) )
-            {
+        } else {
+            if ($value && $value == $this->get($name)) {
                 return true;
-            }
-            else
-            {
+            } else {
                 return false;
             }
         }

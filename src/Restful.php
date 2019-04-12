@@ -47,22 +47,22 @@ abstract class Restful
      * @param int   $responseCode 状态码
      * @param mixed $data         返回的数据
      */
-    final protected function ok( int $responseCode, $data = '' )
+    final protected function ok(int $responseCode, $data = '')
     {
-        $this->result( $responseCode, $data );
+        $this->result($responseCode, $data);
     }
 
     /**
      * 返回失败
      *
      * @param int    $responseCode 状态码
-     * @param  int   $errCode      失败码
+     * @param int    $errCode      失败码
      * @param string $message      错误消息
      * @param mixed  $data         额外数据
      */
-    final protected function fail( int $responseCode, int $errCode, string $message, $data = '' )
+    final protected function fail(int $responseCode, int $errCode, string $message, $data = '')
     {
-        $this->result( $responseCode, $data, $errCode, $message );
+        $this->result($responseCode, $data, $errCode, $message);
     }
 
     /**
@@ -73,31 +73,26 @@ abstract class Restful
      * @param int         $errCode      错误码
      * @param string|null $message      消息
      */
-    final protected function result( int $responseCode, $data = '', int $errCode = null, string $message = null )
+    final protected function result(int $responseCode, $data = '', int $errCode = null, string $message = null)
     {
-        if ( !headers_sent() )
-        {
-            http_response_code( $responseCode );
-            header( 'Content-Type: application/json' );
+        if (!headers_sent()) {
+            http_response_code($responseCode);
+            header('Content-Type: application/json');
         }
-        if ( is_null( $errCode ) )
-        {
+        if (is_null($errCode)) {
             $result = $data;
-        }
-        else
-        {
+        } else {
             $result = [
                 'err_code' => $errCode,
-                'message'  => $message
+                'message'  => $message,
             ];
-            if ( is_array( $data ) )
-            {
-                $result = array_merge( $result, $data );
+            if (is_array($data)) {
+                $result = array_merge($result, $data);
             }
         }
 
-        $response = Response::create( $result, $this->responseType, $responseCode );
+        $response = Response::create($result, $this->responseType, $responseCode);
 
-        throw new HttpResponseException( $response );
+        throw new HttpResponseException($response);
     }
 }

@@ -22,8 +22,7 @@ class Http
      */
     public static function getInstance(): Http
     {
-        if ( !self::$instance instanceof self )
-        {
+        if (!self::$instance instanceof self) {
             self::$instance = new self();
         }
 
@@ -42,57 +41,51 @@ class Http
      * @return Http
      * @throws \Exception
      */
-    public function request( string $uri, $data = [], string $method = 'get', bool $secret = null, string $key = null ): Http
-    {
-        $method = strtoupper( $method );
+    public function request(
+        string $uri,
+        $data = [],
+        string $method = 'get',
+        bool $secret = null,
+        string $key = null
+    ): Http {
+        $method = strtoupper($method);
         $ch     = curl_init();
-        if ( $method == 'GET' )
-        {
-            if ( $data )
-            {
-                if ( strpos( $uri, '?' ) )
-                {
-                    foreach ( $data as $key => $item )
-                    {
+        if ($method == 'GET') {
+            if ($data) {
+                if (strpos($uri, '?')) {
+                    foreach ($data as $key => $item) {
                         $uri .= "&{$key}={$item}";
                     }
-                }
-                else
-                {
-                    $uri .= '?' . urldecode( http_build_query( $data ) );
+                } else {
+                    $uri .= '?'.urldecode(http_build_query($data));
                 }
             }
-        }
-        else
-        {
-            if ( $method == 'POST' )
-            {
-                curl_setopt( $ch, CURLOPT_POST, 1 );
-                curl_setopt( $ch, CURLOPT_POSTFIELDS, is_array( $data ) ? urldecode( http_build_query( $data ) ) : $data );
+        } else {
+            if ($method == 'POST') {
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, is_array($data) ? urldecode(http_build_query($data)) : $data);
             }
         }
 
-        curl_setopt( $ch, CURLOPT_URL, $uri );
-        curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
-        curl_setopt( $ch, CURLOPT_HEADER, false );
-        curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
-        curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, false );
-        if ( $secret && $key )
-        {
-            curl_setopt( $ch, CURLOPT_SSLCERTTYPE, 'PEM' );
-            curl_setopt( $ch, CURLOPT_SSLCERT, $secret );
-            curl_setopt( $ch, CURLOPT_SSLKEYTYPE, 'PEM' );
-            curl_setopt( $ch, CURLOPT_SSLKEY, $key );
+        curl_setopt($ch, CURLOPT_URL, $uri);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        if ($secret && $key) {
+            curl_setopt($ch, CURLOPT_SSLCERTTYPE, 'PEM');
+            curl_setopt($ch, CURLOPT_SSLCERT, $secret);
+            curl_setopt($ch, CURLOPT_SSLKEYTYPE, 'PEM');
+            curl_setopt($ch, CURLOPT_SSLKEY, $key);
         }
-        $this->data = curl_exec( $ch );
-        if ( curl_errno( $ch ) )
-        {
-            $this->error = curl_error( $ch );
-            throw new \Exception( curl_error( $ch ) );
+        $this->data = curl_exec($ch);
+        if (curl_errno($ch)) {
+            $this->error = curl_error($ch);
+            throw new \Exception(curl_error($ch));
         }
-        $info = curl_getinfo( $ch );
-        $this->setInfo( $info );
-        curl_close( $ch );
+        $info = curl_getinfo($ch);
+        $this->setInfo($info);
+        curl_close($ch);
 
         return $this;
     }
@@ -104,7 +97,7 @@ class Http
      */
     public function getCode(): int
     {
-        return (int) $this->http_code;
+        return (int)$this->http_code;
     }
 
     /**
@@ -124,9 +117,9 @@ class Http
      *
      * @return mixed
      */
-    public function getContent( bool $json = true )
+    public function getContent(bool $json = true)
     {
-        return $json ? json_decode( $this->data, true ) : $this->data;
+        return $json ? json_decode($this->data, true) : $this->data;
     }
 
     /**
@@ -136,10 +129,9 @@ class Http
      *
      * @return string
      */
-    public function get( string $name ): string
+    public function get(string $name): string
     {
-        if ( !isset( $this->$name ) )
-        {
+        if (!isset($this->$name)) {
             return false;
         }
 
@@ -149,10 +141,9 @@ class Http
     /**
      * @param $info
      */
-    private function setInfo( $info )
+    private function setInfo($info)
     {
-        foreach ( $info as $key => $value )
-        {
+        foreach ($info as $key => $value) {
             $this->$key = $value;
         }
     }

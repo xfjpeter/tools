@@ -13,8 +13,15 @@
 
 namespace johnxu\tool;
 
+use ReflectionException;
+use ReflectionMethod;
 use think\Container;
 use think\Db;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\ModelNotFoundException;
+use think\Exception;
+use think\exception\DbException;
+use think\exception\PDOException;
 use think\Request;
 
 /**
@@ -74,14 +81,14 @@ class Api extends Restful
     /**
      * Api constructor.
      *
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     * @throws \ReflectionException
+     * @throws DataNotFoundException
+     * @throws ModelNotFoundException
+     * @throws DbException
+     * @throws ReflectionException
      */
     public function __construct()
     {
-        $this->request = Container::get( 'request' );
+        $this->request = Container::get('request');
 
         // 验证登录
         $this->verifyLogin();
@@ -95,43 +102,38 @@ class Api extends Restful
      *
      * @login false
      *
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
+     * @throws DataNotFoundException
+     * @throws ModelNotFoundException
+     * @throws DbException
      */
     public function register()
     {
-        $username = $this->request->post( 'username' );
-        $password = $this->request->post( 'password' );
-        if ( empty( $username ) || empty( $password ) )
-        {
-            $this->fail( self::HTTP_RESPONSE_PARAM_ERROR, 1001, 'Parameter error.' );
-        }
-        else
-        {
+        $username = $this->request->post('username');
+        $password = $this->request->post('password');
+        if (empty($username) || empty($password)) {
+            $this->fail(self::HTTP_RESPONSE_PARAM_ERROR, 1001, 'Parameter error.');
+        } else {
             // 检测验证码是否存在
-            if ( Db::name( $this->tableUser )->where( [ 'username' => $username ] )->find() )
-            {
-                $this->fail( self::HTTP_RESPONSE_EXISTS, 1003, 'User already exists.' );
+            if (Db::name($this->tableUser)->where(['username' => $username])->find()) {
+                $this->fail(self::HTTP_RESPONSE_EXISTS, 1003, 'User already exists.');
             }
             $data = array(
-                'uid'             => Str::instance()->generateUid( 'u' ),
+                'uid'             => Str::instance()->generateUid('u'),
                 'username'        => $username,
-                'password'        => hash_hmac( 'sha256', $password, $this->secret ),
+                'password'        => hash_hmac('sha256', $password, $this->secret),
                 'last_login_ip'   => $this->request->ip(),
                 'last_login_time' => time(),
                 'create_at'       => time(),
-                'update_at'       => time()
+                'update_at'       => time(),
             );
-            $res  = Db::name( $this->tableUser )->insertGetId( $data );
-            if ( method_exists( $this, 'registerSuccess' ) )
-            {
-                $this->registerSuccess( array_merge( $data, array( 'id' => $res ) ) );
+            $res  = Db::name($this->tableUser)->insertGetId($data);
+            if (method_exists($this, 'registerSuccess')) {
+                $this->registerSuccess(array_merge($data, array('id' => $res)));
             }
 
             $res
-                ? $this->ok( self::HTTP_RESPONSE_CREATED, $this->auth( $res, $data ) )
-                : $this->fail( self::HTTP_RESPONSE_PARAM_ERROR, 1004, 'Create user fail' );
+                ? $this->ok(self::HTTP_RESPONSE_CREATED, $this->auth($res, $data))
+                : $this->fail(self::HTTP_RESPONSE_PARAM_ERROR, 1004, 'Create user fail');
         }
     }
 
@@ -140,59 +142,49 @@ class Api extends Restful
      *
      * @login false
      *
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
+     * @throws DataNotFoundException
+     * @throws ModelNotFoundException
+     * @throws DbException
      */
     public function authorization()
     {
         // authorization 授权
-        if ( $username = $this->request->server( 'PHP_AUTH_USER' ) )
-        {
-            $password = $this->request->server( 'PHP_AUTH_PW' );
-        }
-        else
-        {
-            $username = $this->request->post( 'username' );
-            $password = $this->request->post( 'password' );
+        if ($username = $this->request->server('PHP_AUTH_USER')) {
+            $password = $this->request->server('PHP_AUTH_PW');
+        } else {
+            $username = $this->request->post('username');
+            $password = $this->request->post('password');
         }
 
-        if ( !$password || !$username )
-        {
-            $this->fail( self::HTTP_RESPONSE_PARAM_ERROR, 1001, 'Parameter error.' );
+        if (!$password || !$username) {
+            $this->fail(self::HTTP_RESPONSE_PARAM_ERROR, 1001, 'Parameter error.');
         }
         // 验证帐号密码是否正确
-        $user = Db::name( $this->tableUser )->where( [ 'username' => $username ] )->find();
-        if ( !$user )
-        {
-            $this->fail( self::HTTP_RESPONSE_UN_AUTHORIZATION, 1002, 'Unauthorized' );
-        }
-        elseif ( hash_hmac( 'sha256', $password, $this->secret ) != $user['password'] )
-        {
-            $this->fail( self::HTTP_RESPONSE_UN_AUTHORIZATION, 1002, 'Unauthorized' );
-        }
-        else
-        {
-            if ( method_exists( $this, 'authorizationSuccess' ) )
-            {
-                $this->authorizationSuccess( $user );
+        $user = Db::name($this->tableUser)->where(['username' => $username])->find();
+        if (!$user) {
+            $this->fail(self::HTTP_RESPONSE_UN_AUTHORIZATION, 1002, 'Unauthorized');
+        } elseif (hash_hmac('sha256', $password, $this->secret) != $user['password']) {
+            $this->fail(self::HTTP_RESPONSE_UN_AUTHORIZATION, 1002, 'Unauthorized');
+        } else {
+            if (method_exists($this, 'authorizationSuccess')) {
+                $this->authorizationSuccess($user);
             }
             // 授权成功
-            $this->ok( self::HTTP_RESPONSE_OK, $this->auth( $user['id'], $user ) );
+            $this->ok(self::HTTP_RESPONSE_OK, $this->auth($user['id'], $user));
         }
     }
 
     /**
      * 退出登录
      *
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws Exception
+     * @throws PDOException
      */
     public function logout()
     {
-        Db::name( $this->tableToken )->where( [ 'user_id' => $this->auth['id'] ] )->delete();
+        Db::name($this->tableToken)->where(['user_id' => $this->auth['id']])->delete();
 
-        $this->ok( self::HTTP_RESPONSE_UPDATED, [] );
+        $this->ok(self::HTTP_RESPONSE_UPDATED, []);
     }
 
     /**
@@ -204,62 +196,52 @@ class Api extends Restful
      * @return array
      * @throws \Exception
      */
-    protected function auth( $userId, $extend = array() )
+    protected function auth($userId, $extend = array())
     {
-        Db::name( $this->tableToken )->where( [ 'user_id' => $userId ] )->setField( 'status', 0 );
+        Db::name($this->tableToken)->where(['user_id' => $userId])->setField('status', 0);
 
         // 设置其他的token过期，新增token并启用
         $data = array(
-            'token'      => strtolower( Str::instance()->getMachineCode( 4 ) ),
+            'token'      => strtolower(Str::instance()->getMachineCode(4)),
             'user_id'    => $userId,
             'login_time' => time(),
             'status'     => 1,
-            'login_ip'   => $this->request->ip()
+            'login_ip'   => $this->request->ip(),
         );
-        $res  = Db::name( $this->tableToken )->insert( $data );
+        $res  = Db::name($this->tableToken)->insert($data);
 
-        if ( $res )
-        {
-            if ( isset( $extend['password'] ) )
-            {
-                unset( $extend['password'] );
+        if ($res) {
+            if (isset($extend['password'])) {
+                unset($extend['password']);
             }
-            if ( isset( $extend['id'] ) )
-            {
-                unset( $extend['id'] );
+            if (isset($extend['id'])) {
+                unset($extend['id']);
             }
 
-            return array_merge( $extend, array( 'token' => $data['token'] ) );
-        }
-        else
-        {
-            $this->fail( self::HTTP_RESPONSE_UN_AUTHORIZATION, 1002, 'Unauthorized' );
+            return array_merge($extend, array('token' => $data['token']));
+        } else {
+            $this->fail(self::HTTP_RESPONSE_UN_AUTHORIZATION, 1002, 'Unauthorized');
         }
     }
 
     /**
      * 检测token是否过期
      *
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
+     * @throws DataNotFoundException
+     * @throws ModelNotFoundException
+     * @throws DbException
      */
     protected function verifyLogin()
     {
-        if ( !$this->auth )
-        {
-            $token = $this->request->header( 'token' );
-            $token = $token ? $token : $this->request->param( 'token' );
-            if ( $token )
-            {
-                $res = Db::name( $this->tableToken )->where( [ 'token' => $token, 'status' => 1 ] )->find();
-                if ( !$res )
-                {
-                    $this->fail( self::HTTP_RESPONSE_UN_AUTHORIZATION, 1002, 'Unauthorized' );
-                }
-                else
-                {
-                    $this->auth = Db::name( $this->tableUser )->hidden( [ 'password' ] )->where( [ 'id' => $res['user_id'] ] )->find();
+        if (!$this->auth) {
+            $token = $this->request->header('token');
+            $token = $token ? $token : $this->request->param('token');
+            if ($token) {
+                $res = Db::name($this->tableToken)->where(['token' => $token, 'status' => 1])->find();
+                if (!$res) {
+                    $this->fail(self::HTTP_RESPONSE_UN_AUTHORIZATION, 1002, 'Unauthorized');
+                } else {
+                    $this->auth = Db::name($this->tableUser)->hidden(['password'])->where(['id' => $res['user_id']])->find();
                 }
             }
         }
@@ -268,26 +250,22 @@ class Api extends Restful
     /**
      * verify auth
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function verifyAuth()
     {
-        $reflection = new \ReflectionMethod( $this, $this->request->action() );
+        $reflection = new ReflectionMethod($this, $this->request->action());
         $document   = $reflection->getDocComment();
-        if ( $document )
-        {
-            if ( preg_match( '/\@login\s+(true|false)/', $document, $res ) )
-            {
-                if ( isset( $res[1] ) || $res[1] == 'false' )
-                {
+        if ($document) {
+            if (preg_match('/\@login\s+(true|false)/', $document, $res)) {
+                if (isset($res[1]) || $res[1] == 'false') {
                     return;
                 }
             }
         }
 
-        if ( !$this->auth )
-        {
-            $this->fail( self::HTTP_RESPONSE_UN_AUTHORIZATION, 1002, 'Unauthorized' );
+        if (!$this->auth) {
+            $this->fail(self::HTTP_RESPONSE_UN_AUTHORIZATION, 1002, 'Unauthorized');
         }
     }
 }

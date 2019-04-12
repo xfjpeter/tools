@@ -32,7 +32,7 @@ class Time
      */
     public static function yesterday()
     {
-        return self::getStartAndEndTimestamp( strtotime( '-1 day' ) );
+        return self::getStartAndEndTimestamp(strtotime('-1 day'));
     }
 
     /**
@@ -42,12 +42,12 @@ class Time
      */
     public static function week()
     {
-        list( $y, $m, $d, $w ) = explode( '-', date( 'Y-m-d-w' ) );
+        list($y, $m, $d, $w) = explode('-', date('Y-m-d-w'));
         $w = $w == 0 ? 7 : $w;
 
         return [
-            mktime( 0, 0, 0, $m, $d - $w + 1, $y ),
-            mktime( 23, 59, 59, $m, $d - $w + 7, $y )
+            mktime(0, 0, 0, $m, $d - $w + 1, $y),
+            mktime(23, 59, 59, $m, $d - $w + 7, $y),
         ];
     }
 
@@ -61,8 +61,8 @@ class Time
         $timestamp = time();
 
         return [
-            strtotime( date( 'Y-m-d', strtotime( "last week Monday", $timestamp ) ) ),
-            strtotime( date( 'Y-m-d', strtotime( "last week Sunday", $timestamp ) ) ) + 24 * 3600 - 1
+            strtotime(date('Y-m-d', strtotime("last week Monday", $timestamp))),
+            strtotime(date('Y-m-d', strtotime("last week Sunday", $timestamp))) + 24 * 3600 - 1,
         ];
     }
 
@@ -73,11 +73,11 @@ class Time
      */
     public static function month()
     {
-        list( $y, $m, $t ) = explode( '-', date( 'Y-m-t' ) );
+        list($y, $m, $t) = explode('-', date('Y-m-t'));
 
         return [
-            mktime( 0, 0, 0, $m, 1, $y ),
-            mktime( 23, 59, 59, $m, $t, $y )
+            mktime(0, 0, 0, $m, 1, $y),
+            mktime(23, 59, 59, $m, $t, $y),
         ];
     }
 
@@ -88,12 +88,12 @@ class Time
      */
     public static function lastMonth()
     {
-        $y     = date( 'Y' );
-        $m     = date( 'm' );
-        $begin = mktime( 0, 0, 0, $m - 1, 1, $y );
-        $end   = mktime( 23, 59, 59, $m - 1, date( 't', $begin ), $y );
+        $y     = date('Y');
+        $m     = date('m');
+        $begin = mktime(0, 0, 0, $m - 1, 1, $y);
+        $end   = mktime(23, 59, 59, $m - 1, date('t', $begin), $y);
 
-        return [ $begin, $end ];
+        return [$begin, $end];
     }
 
     /**
@@ -103,11 +103,11 @@ class Time
      */
     public static function year()
     {
-        $y = date( 'Y' );
+        $y = date('Y');
 
         return [
-            mktime( 0, 0, 0, 1, 1, $y ),
-            mktime( 23, 59, 59, 12, 31, $y )
+            mktime(0, 0, 0, 1, 1, $y),
+            mktime(23, 59, 59, 12, 31, $y),
         ];
     }
 
@@ -118,11 +118,11 @@ class Time
      */
     public static function lastYear()
     {
-        $year = date( 'Y' ) - 1;
+        $year = date('Y') - 1;
 
         return [
-            mktime( 0, 0, 0, 1, 1, $year ),
-            mktime( 23, 59, 59, 12, 31, $year )
+            mktime(0, 0, 0, 1, 1, $year),
+            mktime(23, 59, 59, 12, 31, $year),
         ];
     }
 
@@ -134,17 +134,16 @@ class Time
      *
      * @return array
      */
-    public static function dayToNow( $day = 1, $now = true )
+    public static function dayToNow($day = 1, $now = true)
     {
         $end = time();
-        if ( !$now )
-        {
-            list( $foo, $end ) = self::yesterday();
+        if (!$now) {
+            list($foo, $end) = self::yesterday();
         }
 
         return [
-            mktime( 0, 0, 0, date( 'm' ), date( 'd' ) - $day, date( 'Y' ) ),
-            $end
+            mktime(0, 0, 0, date('m'), date('d') - $day, date('Y')),
+            $end,
         ];
     }
 
@@ -155,11 +154,11 @@ class Time
      *
      * @return int
      */
-    public static function daysAgo( $day = 1 )
+    public static function daysAgo($day = 1)
     {
         $nowTime = time();
 
-        return $nowTime - self::daysToSecond( $day );
+        return $nowTime - self::daysToSecond($day);
     }
 
     /**
@@ -169,11 +168,11 @@ class Time
      *
      * @return int
      */
-    public static function daysAfter( $day = 1 )
+    public static function daysAfter($day = 1)
     {
         $nowTime = time();
 
-        return $nowTime + self::daysToSecond( $day );
+        return $nowTime + self::daysToSecond($day);
     }
 
     /**
@@ -183,7 +182,7 @@ class Time
      *
      * @return int
      */
-    public static function daysToSecond( $day = 1 )
+    public static function daysToSecond($day = 1)
     {
         return $day * 86400;
     }
@@ -195,7 +194,7 @@ class Time
      *
      * @return int
      */
-    public static function weekToSecond( $week = 1 )
+    public static function weekToSecond($week = 1)
     {
         return self::daysToSecond() * 7 * $week;
     }
@@ -207,18 +206,18 @@ class Time
      *
      * @return array
      */
-    public static function getDateTime( int $timestamp = null )
+    public static function getDateTime(int $timestamp = null)
     {
         $timestamp = $timestamp ?? time();
-        $year      = date( 'Y', $timestamp );
-        $month     = date( 'm', $timestamp );
-        $day       = date( 'd', $timestamp );
-        $hour      = date( 'H', $timestamp );
-        $minutes   = date( 'm', $timestamp );
-        $second    = date( 's', $timestamp );
-        $week      = date( 'w', $timestamp );
+        $year      = date('Y', $timestamp);
+        $month     = date('m', $timestamp);
+        $day       = date('d', $timestamp);
+        $hour      = date('H', $timestamp);
+        $minutes   = date('m', $timestamp);
+        $second    = date('s', $timestamp);
+        $week      = date('w', $timestamp);
 
-        return [ $year, $month, $day, $hour, $minutes, $second, $week ];
+        return [$year, $month, $day, $hour, $minutes, $second, $week];
     }
 
     /**
@@ -228,12 +227,12 @@ class Time
      *
      * @return array
      */
-    private static function getStartAndEndTimestamp( int $timestamp = null )
+    private static function getStartAndEndTimestamp(int $timestamp = null)
     {
-        [ $year, $month, $day, $hour, $minutes, $second ] = self::getDateTime( $timestamp );
-        $startTimestamp = mktime( 0, 0, 0, $month, $day, $year );
-        $endTimestamp   = mktime( 23, 59, 59, $month, $day, $year );
+        [$year, $month, $day, $hour, $minutes, $second] = self::getDateTime($timestamp);
+        $startTimestamp = mktime(0, 0, 0, $month, $day, $year);
+        $endTimestamp   = mktime(23, 59, 59, $month, $day, $year);
 
-        return [ $startTimestamp, $endTimestamp ];
+        return [$startTimestamp, $endTimestamp];
     }
 }
