@@ -311,3 +311,30 @@ Time::daysToSecond(5);
 // 周数转换成秒数
 Time::weekToSecond(5);
 ```
+
+## JWT验证
+```php
+<?php
+use johnxu\tool\Jwt;
+
+$jwt     = Jwt::getInstance([
+    'key' => '123456',
+]);
+$payload = [
+    'iss' => 'johnxu', // 该jwt的签发者
+    'iat' => time(), // 签发时间
+    'exp' => time() + 7200, // 过期时间
+    'nbf' => time() + 60, // 该时间之前不接收处理该Token
+    'sub' => 'www.johnxu.net', // 面向的用户
+    'jti' => md5(uniqid('jwt').time()) // 该token的唯一值
+];
+
+// 获取token
+$token = $jwt->getToken($payload);
+// echo $token;
+// eyJhbGciOiJIUzI1NiIsInR5cCI6Imp3dCJ9.eyJpc3MiOiJqb2hueHUiLCJpYXQiOjE1NTUzOTA5MzEsImV4cCI6MTU1NTM5ODEzMSwibmJmIjoxNTU1MzkwOTkxLCJzdWIiOiJ3d3cuam9obnh1Lm5ldCIsImp0aSI6ImE0NGQ1M2QzNmUzZjA0ODQ4NWUyNmM4NWRkMjhhODNmIn0.qPJkuuC41UI4usTdelZaGYF3ahGT3WmByjEhg50FrjY
+
+// 校验
+$result = $jwt->verify('eyJhbGciOiJIUzI1NiIsInR5cCI6Imp3dCJ9.eyJpc3MiOiJqb2hueHUiLCJpYXQiOjE1NTUzOTA5MzEsImV4cCI6MTU1NTM5ODEzMSwibmJmIjoxNTU1MzkwOTkxLCJzdWIiOiJ3d3cuam9obnh1Lm5ldCIsImp0aSI6ImE0NGQ1M2QzNmUzZjA0ODQ4NWUyNmM4NWRkMjhhODNmIn0.qPJkuuC41UI4usTdelZaGYF3ahGT3WmByjEhg50FrjY');
+var_dump($result);
+```

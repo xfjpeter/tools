@@ -56,14 +56,14 @@ class Jwt
      * @param array $payload 参数
      * @return string
      * @example
-     * [
-     * 'iss' => 'johnxu', // 该jwt的签发者
-     * 'iat' => time(), // 签发时间
-     * 'exp' => time() + 7200, // 过期时间
-     * 'nbf' => time() + 60, // 该时间之前不接收处理该Token
-     * 'sub' => 'www.johnxu.net', // 面向的用户
-     * 'jti' => md5(uniqid('jwt').time()) // 该token的唯一值
-     * ]
+     *                       [
+     *                       'iss' => 'johnxu', // 该jwt的签发者
+     *                       'iat' => time(), // 签发时间
+     *                       'exp' => time() + 7200, // 过期时间
+     *                       'nbf' => time() + 60, // 该时间之前不接收处理该Token
+     *                       'sub' => 'www.johnxu.net', // 面向的用户
+     *                       'jti' => md5(uniqid('jwt').time()) // 该token的唯一值
+     *                       ]
      */
     public function getToken(array $payload)
     {
@@ -128,7 +128,7 @@ class Jwt
         if (count($token) < 3) {
             return false;
         }
-        [$headerBase64URLEncodeStr, $payloadBase64URLEncodeStr, $sign] = $token;
+        list($headerBase64URLEncodeStr, $payloadBase64URLEncodeStr, $sign) = $token;
         $header  = json_decode($this->safeBase64Decode($headerBase64URLEncodeStr), true);
         $payload = json_decode($this->safeBase64Decode($payloadBase64URLEncodeStr), true);
         // 验证是否有header参数中是否有alg
@@ -196,18 +196,3 @@ class Jwt
         return $this->config['header'];
     }
 }
-
-$jwt = Jwt::getInstance();
-
-
-$payload = [
-    'iss' => 'johnxu', // 该jwt的签发者
-    'iat' => time(), // 签发时间
-    'exp' => time() + 7200, // 过期时间
-    'nbf' => time() + 60, // 该时间之前不接收处理该Token
-    'sub' => 'www.johnxu.net', // 面向的用户
-    'jti' => md5(uniqid('jwt').time()) // 该token的唯一值
-];
-// echo $jwt->getToken($payload);
-
-var_dump($jwt->verify('eyJhbGciOiJIUzI1NiIsInR5cCI6Imp3dCJ9.eyJpc3MiOiJqb2hueHUiLCJpYXQiOjE1NTUzODg1NDAsImV4cCI6MTU1NTM5NTc0MCwibmJmIjoxNTU1Mzg4NjAwLCJzdWIiOiJ3d3cuam9obnh1Lm5ldCIsImp0aSI6IjEzYTc4NTEyZDc4ZjhkYTM1MWQ4NDNkYmFhNDFkNjMzIn0.RR5ogeU1WPg04qJn43EKLcYSO16xg6_8X56hjNn5VZA'));
