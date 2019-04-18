@@ -8,38 +8,14 @@
 namespace johnxu\tool;
 
 use Exception;
+use johnxu\tool\traits\Singleton;
 
 /**
  * string operator
  */
 class Str
 {
-    private static $instance = null;
-
-    /**
-     * construct
-     */
-    private function __construct()
-    {
-    }
-
-    /**
-     * instantiation
-     *
-     * @access public
-     *
-     * @return Str
-     * @author johnxu <fsyzxz@163.com>
-     *
-     */
-    public static function instance()
-    {
-        if (!self::$instance instanceof self) {
-            self::$instance = new self();
-        }
-
-        return self::$instance;
-    }
+    use Singleton;
 
     /**
      * reverse string
@@ -136,14 +112,14 @@ class Str
      */
     public function remove(string $haystack, string $needle): string
     {
-        $haystack = self::instance()->convertToArray($haystack);
+        $haystack = self::getInstance()->convertToArray($haystack);
         foreach ($haystack as $key => $item) {
-            if (self::instance()->has($needle, $item)) {
+            if (self::getInstance()->has($needle, $item)) {
                 unset($haystack[$key]);
             }
         }
 
-        return self::instance()->arrayToString($haystack);
+        return self::getInstance()->arrayToString($haystack);
     }
 
     /**
@@ -239,11 +215,11 @@ class Str
      */
     public function generateTradeNo(int $length = 10): string
     {
-        return date('YmdHis').self::instance()->cut(
-                self::instance()->arrayToString(
+        return date('YmdHis').self::getInstance()->cut(
+                self::getInstance()->arrayToString(
                     array_map(
                         'ord', str_split(
-                            self::instance()->cut(uniqid(), 6, 13), 1)
+                            self::getInstance()->cut(uniqid(), 6, 13), 1)
                     )),
                 0,
                 $length
@@ -259,10 +235,10 @@ class Str
      */
     public function generateUid(string $prefix = ''): string
     {
-        return $prefix.self::instance()->arrayToString(
+        return $prefix.self::getInstance()->arrayToString(
                 array_map(
                     'ord', str_split(
-                        self::instance()->cut(uniqid(), 6, 13), 1)
+                        self::getInstance()->cut(uniqid(), 6, 13), 1)
                 ));
     }
 

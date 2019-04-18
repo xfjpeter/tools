@@ -2,6 +2,9 @@
 
 namespace johnxu\tool;
 
+use Exception;
+use johnxu\tool\traits\Singleton;
+
 /**
  * Class Http
  *
@@ -13,21 +16,7 @@ class Http
     private $http_code = 0;
     private $error     = '';
 
-    private static $instance = null;
-
-    /**
-     * 实例化
-     *
-     * @return Http
-     */
-    public static function getInstance(): Http
-    {
-        if (!self::$instance instanceof self) {
-            self::$instance = new self();
-        }
-
-        return self::$instance;
-    }
+    use Singleton;
 
     /**
      * 请求
@@ -39,7 +28,7 @@ class Http
      * @param string|null $key
      *
      * @return Http
-     * @throws \Exception
+     * @throws Exception
      */
     public function request(
         string $uri,
@@ -81,7 +70,7 @@ class Http
         $this->data = curl_exec($ch);
         if (curl_errno($ch)) {
             $this->error = curl_error($ch);
-            throw new \Exception(curl_error($ch));
+            throw new Exception(curl_error($ch));
         }
         $info = curl_getinfo($ch);
         $this->setInfo($info);

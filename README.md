@@ -4,7 +4,7 @@
 ```php
 <?php
 use johnxu\tool\Str;
-$res = Str::instance()->cut('http://www.johnxu.net', 0, 3);
+$res = Str::getInstance()->cut('http://www.johnxu.net', 0, 3);
 var_dump($res); // htt
 ```
 
@@ -12,10 +12,10 @@ var_dump($res); // htt
 ```php
 <?php
 use johnxu\tool\Str;
-$res = Str::instance()->encoding('我们是好朋友', 'GBK');
+$res = Str::getInstance()->encoding('我们是好朋友', 'GBK');
 var_dump($res); // �����Ǻ�����
 
-var_dump(Str::instance()->encoding('�����Ǻ�����', 'UTF-8')); // 我们是好朋友
+var_dump(Str::getInstance()->encoding('�����Ǻ�����', 'UTF-8')); // 我们是好朋友
 ```
 
 ## 内置方法
@@ -39,7 +39,7 @@ var_dump(Str::instance()->encoding('�����Ǻ�����', 'UTF-8'))
 use johnxu\tool\Rsa;
 $data = '这是要签名的数据，字符串类型';
 $private_key = ''; // 有两种方式，第一种是文件，写入文件路径即可；第二种是字符串，填写密钥字符串
-$sign = Rsa::getInstance()->sign($data, $private_key); // 返回的签名后的base64字符串
+$sign = Rsa::signature($data, $private_key); // 返回的签名后的base64字符串
 ```
 
 ## RSA校验签名
@@ -49,7 +49,23 @@ use johnxu\tool\Rsa;
 $sign = ''; // 签名串
 $public_key = ''; // 同private_key
 $data = '这是要签名的数据，字符串类型';
-$result = Rsa::getInstance()->sign($data, $public_key, $sign); // 返回验签的结果
+$result = Rsa::verify($data, $sign, $public_key); // 返回验签的结果
+```
+
+## 公私钥加密
+```php
+<?php
+use johnxu\tool\Rsa;
+// 第三个参数有为，表示用公钥加密，私钥解密；反之
+Rsa::encrypt('1234', 'private or public key', true);
+```
+
+## 公私钥解密
+```php
+<?php
+use johnxu\tool\Rsa;
+// 第三个参数有为，表示用私钥解密；反之
+Rsa::decrypt('加密数据', 'private or public key', true);
 ```
 
 ## Config配置是用

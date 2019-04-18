@@ -13,29 +13,13 @@
 
 namespace johnxu\tool;
 
+use johnxu\tool\traits\Singleton;
+
 class Config
 {
     private $config = array();
 
-    static private $instance;
-
-    private function __construct()
-    {
-    }
-
-    /**
-     * Get Instance
-     *
-     * @return Config
-     */
-    public static function getInstance()
-    {
-        if (!self::$instance instanceof self) {
-            self::$instance = new self();
-        }
-
-        return self::$instance;
-    }
+    use Singleton;
 
     /**
      * Set Config Value
