@@ -37,12 +37,7 @@ class Config
             $name = array($name);
         }
         if (in_array($name[0], array_keys($this->config))) {
-            // 判断二级name是否存在
-            if (in_array($name[1], array_keys($this->config[$name[0]]))) {
-                $this->config[$name[0]][$name[1]] = $value;
-            } else {
-                $this->config[$name[0]] = $value;
-            }
+            $this->config[$name[0]][$name[1]] = $value;
         } else {
             if (count($name) > 1) {
                 $this->config[$name[0]] = array(
