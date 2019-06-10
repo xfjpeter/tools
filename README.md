@@ -354,3 +354,37 @@ $token = $jwt->getToken($payload);
 $result = $jwt->verify('eyJhbGciOiJIUzI1NiIsInR5cCI6Imp3dCJ9.eyJpc3MiOiJqb2hueHUiLCJpYXQiOjE1NTUzOTA5MzEsImV4cCI6MTU1NTM5ODEzMSwibmJmIjoxNTU1MzkwOTkxLCJzdWIiOiJ3d3cuam9obnh1Lm5ldCIsImp0aSI6ImE0NGQ1M2QzNmUzZjA0ODQ4NWUyNmM4NWRkMjhhODNmIn0.qPJkuuC41UI4usTdelZaGYF3ahGT3WmByjEhg50FrjY');
 var_dump($result);
 ```
+
+## AES 加密与解密
+
+### CBC方式加密解密
+
+```php
+<?php
+use johnxu\tool\Aes;
+
+$aes = Aes::getInstance();
+try {
+    echo $aes->encrypt('{"name":"johnxu","age":25,"email":"fsyzxz@163.com"}', $key, Aes::METHOD_AES_128_CBC, $iv);
+    echo PHP_EOL;
+    echo $aes->decrypt('bBBl028ESU3hjpxwIPzTf3ep+WT3k8FALPic8Hz9o99OMZVgAoJmBTjHxrQJIc1VffLjtBRxCldUvQLSAptQRA==', $key,
+            Aes::METHOD_AES_128_CBC, $iv).PHP_EOL.PHP_EOL;
+} catch (Exception $e) {
+    var_dump($e->getMessage());
+}
+```
+
+### ECB方式加密解密
+
+```php
+<?php
+use johnxu\tool\Aes;
+
+$aes = Aes::getInstance();
+try {
+    echo $aes->encrypt('{"name":"johnxu","age":25,"email":"fsyzxz@163.com"}', $key).PHP_EOL;
+    echo $aes->decrypt('U8TELNRLE6l+JIM+nKO/4rg7ZaaJWOyLocU3MZPsDOnnkpbG/msHn63FOjvHCwjH8cmlCOi8wYmVKiLyq+Cdew==', $key).PHP_EOL;
+} catch(Exception $e) {
+    var_dump($e->getMessage());
+}
+```
