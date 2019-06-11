@@ -388,3 +388,30 @@ try {
     var_dump($e->getMessage());
 }
 ```
+
+## 压缩或解压文件
+
+```php
+<?php
+
+use johnxu\tool\Zip;
+
+$zip = Zip::getInstance();
+
+// 压缩
+$filename = $zip->zzip('./');
+if (!$filename) {
+    var_dump($zip->getError());
+} else {
+    var_dump($filename);
+}
+
+// 解压
+$list = $zip->unzip('./test.zip', './test/');
+if (!$list) {
+    var_dump($zip->getError());
+} else {
+    var_dump($list);
+}
+
+```
