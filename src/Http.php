@@ -34,7 +34,7 @@ class Http
         string $uri,
         $data = [],
         string $method = 'get',
-        bool $secret = null,
+        string $secret = null,
         string $key = null
     ): Http {
         $method = strtoupper($method);
@@ -46,7 +46,7 @@ class Http
                         $uri .= "&{$key}={$item}";
                     }
                 } else {
-                    $uri .= '?'.urldecode(http_build_query($data));
+                    $uri .= '?' . urldecode(http_build_query($data));
                 }
             }
         } else {
@@ -86,7 +86,7 @@ class Http
      */
     public function getCode(): int
     {
-        return (int)$this->http_code;
+        return (int) $this->http_code;
     }
 
     /**
