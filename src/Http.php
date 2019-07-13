@@ -19,24 +19,17 @@ class Http
     use Singleton;
 
     /**
-     * 请求
-     *
-     * @param string      $uri
-     * @param array       $data
-     * @param string      $method
-     * @param bool|null   $secret
-     * @param string|null $key
-     *
+     * 请求接口
+     * @param string      $uri    请求地址
+     * @param array       $data   请求数据
+     * @param string      $method 请求方法
+     * @param string|null $secret ssl证书
+     * @param string|null $key    ssl证书密码
      * @return Http
      * @throws Exception
      */
-    public function request(
-        string $uri,
-        $data = [],
-        string $method = 'get',
-        string $secret = null,
-        string $key = null
-    ): Http {
+    public function request(string $uri, $data = [], string $method = 'get', string $secret = null, string $key = null): Http
+    {
         $method = strtoupper($method);
         $ch     = curl_init();
         if ($method == 'GET') {
@@ -61,6 +54,8 @@ class Http
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         if ($secret && $key) {
             curl_setopt($ch, CURLOPT_SSLCERTTYPE, 'PEM');
             curl_setopt($ch, CURLOPT_SSLCERT, $secret);
@@ -81,17 +76,15 @@ class Http
 
     /**
      * 返回码
-     *
      * @return int
      */
     public function getCode(): int
     {
-        return (int) $this->http_code;
+        return (int)$this->http_code;
     }
 
     /**
      * 错误信息
-     *
      * @return string
      */
     public function getError(): string
@@ -101,9 +94,7 @@ class Http
 
     /**
      * 获取类型
-     *
      * @param bool $json 当true时json_decode数据，否则原样返回
-     *
      * @return mixed
      */
     public function getContent(bool $json = true)
@@ -113,9 +104,7 @@ class Http
 
     /**
      * 获取curl_getinfo里的值
-     *
      * @param string $name
-     *
      * @return string
      */
     public function get(string $name): string
