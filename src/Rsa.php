@@ -7,7 +7,9 @@
 
 namespace johnxu\tool;
 
-use Exception;
+use johnxu\tool\exception\InvalidParamException;
+use johnxu\tool\exception\InvalidSignatureException;
+use johnxu\tool\exception\InvalidVerifyException;
 
 final class Rsa
 {
@@ -20,20 +22,21 @@ final class Rsa
      * @param string $signType   RSA or RSA2
      *
      * @return string
-     * @throws Exception
+     * @throws InvalidParamException
+     * @throws InvalidSignatureException
      */
     public static function signature(string $data, string $privateKey, $signType = 'RSA2')
     {
         $privateKey   = self::getPrivateKey($privateKey);
         $privateKeyId = openssl_pkey_get_private($privateKey);
         if (!$privateKeyId) {
-            throw new Exception('Private key is error.');
+            throw new InvalidParamException('Private key is error.');
         }
         $flag = openssl_sign($data, $signature, $privateKeyId,
             ($signType == 'RSA2' ? OPENSSL_ALGO_SHA256 : OPENSSL_ALGO_SHA1));
 
         if (!$flag) {
-            throw new Exception('Signature fail,');
+            throw new InvalidSignatureException('Signature fail,');
         }
 
         return base64_encode($signature);
@@ -48,20 +51,21 @@ final class Rsa
      * @param string $signType
      *
      * @return bool
-     * @throws Exception
+     * @throws InvalidParamException
+     * @throws InvalidVerifyException
      */
     public static function verify(string $data, string $signature, string $publicKey, $signType = 'RSA2')
     {
         $publicKey   = self::getPublicKey($publicKey);
         $publicKeyId = openssl_pkey_get_public($publicKey);
         if (!$publicKeyId) {
-            throw new Exception('Public key is error.');
+            throw new InvalidParamException('Public key is error.');
         }
         $flag = openssl_verify($data, base64_decode($signature), $publicKeyId,
             ($signType == 'RSA2' ? OPENSSL_ALGO_SHA256 : OPENSSL_ALGO_SHA1));
 
         if ($flag !== 1) {
-            throw new Exception('Verify fail.');
+            throw new InvalidVerifyException('Verify fail.');
         }
 
         return true;
@@ -75,7 +79,7 @@ final class Rsa
      * @param boolean $public
      *
      * @return string
-     * @throws Exception
+     * @throws InvalidParamException
      */
     public static function encrypt(string $data, string $key, bool $public = true)
     {
@@ -86,7 +90,7 @@ final class Rsa
         }
 
         if (!$flag) {
-            throw new Exception('Public key or Private key error.');
+            throw new InvalidParamException('Public key or Private key error.');
         }
 
         return base64_encode($crypted);
@@ -100,7 +104,7 @@ final class Rsa
      * @param boolean $private
      *
      * @return mixed
-     * @throws Exception
+     * @throws InvalidParamException
      */
     public static function decrypt(string $data, string $key, bool $private = true)
     {
@@ -112,7 +116,7 @@ final class Rsa
         }
 
         if (!$flag) {
-            throw new Exception('Public key or Private key error.');
+            throw new InvalidParamException('Public key or Private key error.');
         }
 
         return $decrypted;
@@ -140,7 +144,7 @@ final class Rsa
         // 替换掉所有的模板内容
         $publicKey = str_replace($replaceTpl, '', $param);
         // 拼接成public_key格式
-        $publicKey = $replaceTpl[0].PHP_EOL.wordwrap($publicKey, 64, "\n", true).PHP_EOL.$replaceTpl[1];
+        $publicKey = $replaceTpl[0] . PHP_EOL . wordwrap($publicKey, 64, "\n", true) . PHP_EOL . $replaceTpl[1];
 
         return $publicKey;
     }
@@ -165,7 +169,7 @@ final class Rsa
             "\r\n",
         );
         $privateKey = str_replace($replaceTpl, '', $param);
-        $privateKey = $replaceTpl[0].PHP_EOL.wordwrap($privateKey, 64, "\n", true).PHP_EOL.$replaceTpl[1];
+        $privateKey = $replaceTpl[0] . PHP_EOL . wordwrap($privateKey, 64, "\n", true) . PHP_EOL . $replaceTpl[1];
 
         return $privateKey;
     }

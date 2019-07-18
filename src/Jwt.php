@@ -13,90 +13,128 @@
 
 namespace johnxu\tool;
 
+use johnxu\tool\exception\InvalidParamException;
+use johnxu\tool\exception\InvalidSignatureException;
+use johnxu\tool\exception\InvalidVerifyException;
+
 class Jwt
 {
-    private static $instance = null;
-
-    private $config = [
-        'header' => [
-            'alg' => 'HS256',
-            'typ' => 'jwt',
-        ],
-        'key'    => 'fsyzxz@163.com',
-    ];
-
-    private $algs = [
-        'SH256' => 'sha256',
-    ];
-
     /**
-     * Jwt constructor.
-     * @param array $config
+     * @var string 签发人
      */
-    private function __construct(array $config = [])
-    {
-        $this->config = array_merge($this->config, $config);
-    }
-
+    private $iss;
     /**
-     * @param array $config
-     * @return Jwt
+     * @var int 过期时间
      */
-    public static function getInstance(array $config = []): Jwt
-    {
-        if (is_null(self::$instance)) {
-            self::$instance = new self($config);
-        }
-
-        return self::$instance;
-    }
+    private $exp;
+    /**
+     * @var string 主题
+     */
+    private $sub;
+    /**
+     * @var string 受众
+     */
+    private $aud;
+    /**
+     * @var int 生效时间
+     */
+    private $nbf;
+    /**
+     * @var int 签发时间
+     */
+    private $iat;
+    /**
+     * @var string 编号
+     */
+    private $jti;
+    /**
+     * @var mixed 额外参数
+     */
+    private $payload;
+    /**
+     * @var string 加密密钥
+     */
+    private $key = 'fsyzxz@163.com';
+    /**
+     * @var array jwt 头部信息
+     */
+    private $header = [
+        'alg' => 'HS256',
+        'typ' => 'jwt',
+    ];
+    /**
+     * @var array 加密规则映射
+     */
+    private $keyMap = [
+        'HS256' => 'sha256',
+    ];
 
     /**
      * 获取token
-     * @param array $payload 参数
      * @return string
-     * @example
-     *                       [
-     *                       'iss' => 'johnxu', // 该jwt的签发者
-     *                       'iat' => time(), // 签发时间
-     *                       'exp' => time() + 7200, // 过期时间
-     *                       'nbf' => time() + 60, // 该时间之前不接收处理该Token
-     *                       'sub' => 'www.johnxu.net', // 面向的用户
-     *                       'jti' => md5(uniqid('jwt').time()) // 该token的唯一值
-     *                       ]
+     * @throws InvalidParamException
      */
-    public function getToken(array $payload)
+    public function getToken()
     {
-        $token = $this->getSplicing($payload);
+        if (!is_array($this->getHeader()) || !isset($this->header['alg'])) {
+            throw new InvalidParamException('加密类型错误');
+        }
 
-        return sprintf('%s.%s', $token, $this->signature($token));
+        $token = sprintf('%s.%s',
+            $this->baseSafeEncode(json_encode($this->getHeader(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
+            $this->baseSafeEncode(json_encode($this->getPayload(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)));
+
+        return sprintf('%s.%s', $token, $this->makeSignature($token));
     }
 
     /**
-     * @param array $payload
-     * @return string
+     * 验证token
+     * @param string $token
+     * @return bool|mixed
+     * @throws InvalidSignatureException
+     * @throws InvalidVerifyException
      */
-    public function getSplicing(array $payload)
+    public function verify(string $token)
     {
-        return sprintf('%s.%s',
-            $this->safeBase64Encode(json_encode($this->getHeader(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
-            $this->safeBase64Encode(json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)));
+        $token = explode('.', $token);
+        if (count($token) < 3) {
+            return false;
+        }
+        list($headerBase64URLEncodeStr, $payloadBase64URLEncodeStr, $sign) = $token;
+        $header  = json_decode($this->baseSafeDecode($headerBase64URLEncodeStr), true);
+        $payload = json_decode($this->baseSafeDecode($payloadBase64URLEncodeStr), true);
+        foreach ($payload as $key => $val) {
+            if (property_exists($this, $key)) {
+                $this->{'set' . ucfirst($key)}($val);
+            }
+        }
+        // 验证签名是否正确
+        // 进行hash判断
+        if ($this->makeSignature($headerBase64URLEncodeStr . '.' . $payloadBase64URLEncodeStr) !== $sign) {
+            throw new InvalidSignatureException('签名不正确');
+        }
+        // 验证生效期、有效期
+        $this->checkPayload();
+
+        return $this->getPayload();
     }
 
     /**
+     * 安全加密的base64字符串
      * @param string $input
-     * @return string
+     * @return mixed
      */
-    public function safeBase64Encode(string $input): string
+    private function baseSafeEncode(string $input)
     {
         return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
     }
 
     /**
+     * 安全解析base64字符串
      * @param string $input
-     * @return string
+     * @return bool|string
      */
-    public function safeBase64Decode(string $input): string
+    private function baseSafeDecode(string $input)
     {
         if ($remainder = strlen($input) % 4) {
             $input .= str_repeat('=', (4 - $remainder));
@@ -108,65 +146,186 @@ class Jwt
     }
 
     /**
-     * @param string $input
-     * @param string $alg
-     * @return string
+     * 生成签名串
+     * @param string $token
+     * @return mixed
      */
-    public function signature(string $input, string $alg = 'SH256'): string
+    private function makeSignature(string $token)
     {
-        // TODO: 这里可以分流
-        return $this->safeBase64Encode(hash_hmac($this->algs[$alg], $input, $this->getKey(), true));
+        $alg = $this->keyMap[$this->header['alg']];
+
+        return $this->baseSafeEncode(hash_hmac($alg, $token, $this->getKey(), true));
     }
 
     /**
-     * @param string $token
-     * @return bool|mixed
+     * token生效期、有效期验证
+     * @throws InvalidVerifyException
      */
-    public function verify(string $token)
+    private function checkPayload()
     {
-        $token = explode('.', $token);
-        if (count($token) < 3) {
-            return false;
+        // 验证成效时间
+        if ($this->getNbf() && time() <= $this->getNbf()) {
+            throw new InvalidVerifyException('该token还没到生效期');
         }
-        list($headerBase64URLEncodeStr, $payloadBase64URLEncodeStr, $sign) = $token;
-        $header  = json_decode($this->safeBase64Decode($headerBase64URLEncodeStr), true);
-        $payload = json_decode($this->safeBase64Decode($payloadBase64URLEncodeStr), true);
-        // 验证是否有header参数中是否有alg
-        if (!isset($header['alg'])) {
-            return false;
+        // 验证过期没有
+        if ($this->getExp() && time() >= $this->getExp()) {
+            throw  new  InvalidVerifyException('该token已经失效');
         }
-        // 进行hash判断
-        if ($this->signature($headerBase64URLEncodeStr.'.'.$payloadBase64URLEncodeStr) !== $sign) {
-            return false;
-        }
+    }
 
-        //签发时间大于当前服务器时间验证失败
-        if (isset($payload['iat']) && $payload['iat'] > time()) {
-            return false;
-        }
+    /**
+     * @return mixed
+     */
+    public function getIss()
+    {
+        return $this->iss;
+    }
 
-        //过期时间小宇当前服务器时间验证失败
-        if (isset($payload['exp']) && $payload['exp'] < time()) {
-            return false;
-        }
+    /**
+     * 签发人
+     * @param mixed $iss
+     */
+    public function setIss($iss)
+    {
+        $this->iss = $iss;
+    }
 
-        //该nbf时间之前不接收处理该Token
-        if (isset($payload['nbf']) && $payload['nbf'] > time()) {
-            return false;
-        }
+    /**
+     * @return mixed
+     */
+    public function getExp()
+    {
+        return $this->exp;
+    }
+
+    /**
+     * 过期时间
+     * @param mixed $exp
+     */
+    public function setExp($exp)
+    {
+        $this->exp = $exp;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSub()
+    {
+        return $this->sub;
+    }
+
+    /**
+     * 主题
+     * @param mixed $sub
+     */
+    public function setSub($sub)
+    {
+        $this->sub = $sub;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAud()
+    {
+        return $this->aud;
+    }
+
+    /**
+     * 受众
+     * @param mixed $aud
+     */
+    public function setAud($aud)
+    {
+        $this->aud = $aud;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getNbf()
+    {
+        return $this->nbf;
+    }
+
+    /**
+     * 生效时间
+     * @param mixed $nbf
+     */
+    public function setNbf($nbf)
+    {
+        $this->nbf = $nbf;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIat()
+    {
+        return $this->iat;
+    }
+
+    /**
+     * 签发时间
+     * @param mixed $iat
+     */
+    public function setIat($iat)
+    {
+        $this->iat = $iat;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getJti()
+    {
+        return $this->jti;
+    }
+
+    /**
+     * 编号
+     * @param mixed $jti
+     */
+    public function setJti($jti)
+    {
+        $this->jti = $jti;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPayload()
+    {
+        $payload = [
+            'iat'     => $this->getIat(),
+            'aud'     => $this->getAud(),
+            'exp'     => $this->getExp(),
+            'sub'     => $this->getSub(),
+            'iss'     => $this->getIss(),
+            'nbf'     => $this->getNbf(),
+            'jti'     => $this->getJti(),
+            'payload' => $this->payload,
+        ];
 
         return $payload;
     }
 
     /**
-     * @param array $key
-     * @return Jwt
+     * 额外数据
+     * @param mixed $payload
      */
-    public function setKey(array $key): Jwt
+    public function setPayload($payload)
     {
-        $this->config['key'] = $key;
+        $this->payload = $payload;
+    }
 
-        return $this;
+    /**
+     * @param string $key
+     */
+    public function setKey(string $key)
+    {
+        $this->key = $key;
     }
 
     /**
@@ -174,18 +333,15 @@ class Jwt
      */
     public function getKey(): string
     {
-        return $this->config['key'];
+        return $this->key;
     }
 
     /**
      * @param array $header
-     * @return Jwt
      */
-    public function setHeader(array $header): Jwt
+    public function setHeader(array $header)
     {
-        $this->config['header'] = array_merge($this->config['header'], $header);
-
-        return $this;
+        $this->header = $header;
     }
 
     /**
@@ -193,6 +349,6 @@ class Jwt
      */
     public function getHeader(): array
     {
-        return $this->config['header'];
+        return $this->header;
     }
 }

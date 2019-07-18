@@ -193,51 +193,84 @@ Route::group( 'v1', function () {
 ```php
 <?php
 use johnxu\tool\Rsa;
+use johnxu\tool\exception\InvalidSignatureException;
+use johnxu\tool\exception\InvalidParamException;
+use johnxu\tool\exception\InvalidVerifyException;
 
 $publicKey = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC/ykZnOUb0ro7WaraW+aPyNCgZgJyvr2CIQhTLRvOeOW4Ba8FaudwWACL0QFfIjW+V3rqMG0SPHGIitHUXIH0tzQZoKp8FfZVQOZxNyBaIjwzgSvuZuBGYZ/rrH53158t7gt58IIHGxcfJehhex/0bk8rUAO2U5kKGKwvEbDMOXwIDAQAB';
 $privateKey = 'MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAL/KRmc5RvSujtZqtpb5o/I0KBmAnK+vYIhCFMtG8545bgFrwVq53BYAIvRAV8iNb5XeuowbRI8cYiK0dRcgfS3NBmgqnwV9lVA5nE3IFoiPDOBK+5m4EZhn+usfnfXny3uC3nwggcbFx8l6GF7H/RuTytQA7ZTmQoYrC8RsMw5fAgMBAAECgYA1T5ucS86OawsnTMhuVPweciMHW7myGBTEK2IuUw2a2KncWUCI4IrtzqHotQ3xoGb5CM1f7qBzC1e3/+NgR1aj7laAXtg/S1mfJISMIoXkUi/9q+4GwbbaU/vkYyhqnoAa5tL7/X4wuRlWtc7tC9TyqS+EXOa990SZOpuHjqpCiQJBAOLV1+ISWa30MMFWeTD5L6SP6BAE2mrgt6ZaRL2hGUp9QxWX2o89/cne4FEa0RrI1gLfOYHEoHhw5lqSMHHpGJMCQQDYcvBp7idMecg9+NcI1F+P1EDtNsMgpiXmAdV8sNpv/TbhzarLHh7bTnHrg7e2QRhUBuoZmU8Rx3FsUu41Qc6FAkBQyZKKvLhd4QNgSFj/XTBfrrUax2+28vPVdn7W/sJQKk6zKRM5Qv3ZYNyJZkClBnRaL4B+vDXez27rQPeqCjerAkAv9+kH0NusuyCBe3BMaKR0/5kT+RrtVWT4wFdLtvXx87ACAs5jDV3RRGVCyIIiRfLaTF39Jli7m/OrCgX4j4jxAkEAspLOMeD7ZH97cR+Mi3iHnweCQ86tZ6UNCc2+pC7murjpZs+fBP/zDeLTjYmX22QZb1KvPTeAnKkQ2OuyUdTN/w==';
 
 // 私钥签名
-$signature = Rsa::signature('123', $privateKey, 'RSA2');
-var_dump($signature);
+try {
+    $signature = Rsa::signature('123', $privateKey, 'RSA2');
+    var_dump($signature);
+} catch (InvalidSignatureException $e) {
+    var_dump($e->getMessage());
+} catch (InvalidParamException $e) {
+    var_dump($e->getMessage());
+}
 
 // 公钥验签
-$flag = Rsa::verify($signature, $publicKey, 'RSA2');
-var_dump($flag);
+try {
+    $flag = Rsa::verify($signature, $publicKey, 'RSA2');
+    var_dump($flag);
+} catch (InvalidParamException $e) {
+    var_dump($e->getMessage());
+} catch (InvalidVerifyException $e) {
+    var_dump($e->getMessage());
+}
 ```
 
 ## RSA加密与解密
 ```php
 <?php
 use johnxu\tool\Rsa;
+use johnxu\tool\exception\InvalidParamException;
 
 $publicKey = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC/ykZnOUb0ro7WaraW+aPyNCgZgJyvr2CIQhTLRvOeOW4Ba8FaudwWACL0QFfIjW+V3rqMG0SPHGIitHUXIH0tzQZoKp8FfZVQOZxNyBaIjwzgSvuZuBGYZ/rrH53158t7gt58IIHGxcfJehhex/0bk8rUAO2U5kKGKwvEbDMOXwIDAQAB';
 $privateKey = 'MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAL/KRmc5RvSujtZqtpb5o/I0KBmAnK+vYIhCFMtG8545bgFrwVq53BYAIvRAV8iNb5XeuowbRI8cYiK0dRcgfS3NBmgqnwV9lVA5nE3IFoiPDOBK+5m4EZhn+usfnfXny3uC3nwggcbFx8l6GF7H/RuTytQA7ZTmQoYrC8RsMw5fAgMBAAECgYA1T5ucS86OawsnTMhuVPweciMHW7myGBTEK2IuUw2a2KncWUCI4IrtzqHotQ3xoGb5CM1f7qBzC1e3/+NgR1aj7laAXtg/S1mfJISMIoXkUi/9q+4GwbbaU/vkYyhqnoAa5tL7/X4wuRlWtc7tC9TyqS+EXOa990SZOpuHjqpCiQJBAOLV1+ISWa30MMFWeTD5L6SP6BAE2mrgt6ZaRL2hGUp9QxWX2o89/cne4FEa0RrI1gLfOYHEoHhw5lqSMHHpGJMCQQDYcvBp7idMecg9+NcI1F+P1EDtNsMgpiXmAdV8sNpv/TbhzarLHh7bTnHrg7e2QRhUBuoZmU8Rx3FsUu41Qc6FAkBQyZKKvLhd4QNgSFj/XTBfrrUax2+28vPVdn7W/sJQKk6zKRM5Qv3ZYNyJZkClBnRaL4B+vDXez27rQPeqCjerAkAv9+kH0NusuyCBe3BMaKR0/5kT+RrtVWT4wFdLtvXx87ACAs5jDV3RRGVCyIIiRfLaTF39Jli7m/OrCgX4j4jxAkEAspLOMeD7ZH97cR+Mi3iHnweCQ86tZ6UNCc2+pC7murjpZs+fBP/zDeLTjYmX22QZb1KvPTeAnKkQ2OuyUdTN/w==';
 
 // 公钥加密 === 私钥解密
 // 公钥加密
-$crypted = Rsa::encrypt('123', $publicKey);
-var_dump($crypted);
+try {
+    $crypted = Rsa::encrypt('123', $publicKey);
+    var_dump($crypted);
+} catch(InvalidParamException $e) {
+    var_dump($e->getMessage());
+}
 
 // 私钥解密
-$decrypted = Rsa::decrypt($crypted, $privateKey);
-var_dump($decrypted);
+try {
+    $decrypted = Rsa::decrypt($crypted, $privateKey);
+    var_dump($decrypted);
+} catch(InvalidParamException $e) {
+    var_dump($e->getMessage());
+}
 
 // 私钥加密 === 公钥解密
 // 私钥加密
-$crypted = Rsa::encrypt('123', $privateKey, false);
-var_dump($crypted);
+try {
+    $crypted = Rsa::encrypt('123', $privateKey, false);
+    var_dump($crypted);
+} catch (InvalidParamException $e) {
+    var_dump($e->getMessage());
+}
 
 // 公钥解密
-$decrypted = Rsa::decrypt($crypted, $publicKey, false);
-var_dump($decrypted);
+try {
+    $decrypted = Rsa::decrypt($crypted, $publicKey, false);
+    var_dump($decrypted);
+} catch (InvalidParamException $e) {
+    var_dump($e->getMessage());
+}
 ```
 
 ## 用户授权管理
 ```php
 <?php
+use johnxu\tool\Api;
 
-class Users extends \johnxu\tool\Api
+class Users extends Api
 {	
 	/**
 	 * @login true 
@@ -328,7 +361,7 @@ Time::daysToSecond(5);
 Time::weekToSecond(5);
 ```
 
-## JWT验证
+## ~~JWT验证(已废弃)~~
 ```php
 <?php
 use johnxu\tool\Jwt;
@@ -353,6 +386,64 @@ $token = $jwt->getToken($payload);
 // 校验
 $result = $jwt->verify('eyJhbGciOiJIUzI1NiIsInR5cCI6Imp3dCJ9.eyJpc3MiOiJqb2hueHUiLCJpYXQiOjE1NTUzOTA5MzEsImV4cCI6MTU1NTM5ODEzMSwibmJmIjoxNTU1MzkwOTkxLCJzdWIiOiJ3d3cuam9obnh1Lm5ldCIsImp0aSI6ImE0NGQ1M2QzNmUzZjA0ODQ4NWUyNmM4NWRkMjhhODNmIn0.qPJkuuC41UI4usTdelZaGYF3ahGT3WmByjEhg50FrjY');
 var_dump($result);
+```
+
+## JWT(Json Web Tokens)
+```php
+<?php
+use johnxu\tool\Jwt;
+use johnxu\tool\Str;
+use johnxu\tool\exception\InvalidParamException;
+use johnxu\tool\exception\InvalidVerifyException;
+use johnxu\tool\exception\InvalidSignatureException;
+
+// 生成token签名
+$jwt = new Jwt();
+$jwt->setHeader([
+    'typ' => 'jwt',
+    'alg' => 'HS256',
+]);
+$jwt->setExp(time() + 60);
+$jwt->setNbf(time() + 30);
+$jwt->setJti(Str::getInstance()->generateTradeNo());
+$jwt->setSub('权限验证');
+$jwt->setIat(time());
+$jwt->setIss('johnxu');
+$jwt->setPayload([
+    'token' => Str::getInstance()->getMachineCode(3, 8, ''),
+]);
+try {
+    var_dump($jwt->getToken());
+} catch (InvalidParamException $e) {
+    var_dump($e->getMessage()); // 接管参数异常
+}
+
+// 验证token签名
+$token = 'eyJ0eXAiOiJqd3QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NjM0MTg0NDIsImF1ZCI6bnVsbCwiZXhwIjoxNTYzNDE5NDQyLCJzdWIiOiLmnYPpmZDpqozor4EiLCJpc3MiOiJqb2hueHUiLCJuYmYiOjE1NjM0MTg1MDIsImp0aSI6IjIwMTkwNzE4MTA1NDAyNTI5NzU2NDg1NyIsInBheWxvYWQiOnsidG9rZW4iOiI3MTRGMkE5NzcwMkUxMTE1NTU1MzAwNkUifX0.LwINfASxIBSFuKd4U5MtjbUQhVDPTRcKsaGC9Ud7jVM';
+
+$jwt = new Jwt();
+try {
+    var_dump($jwt->verify($token));
+    /**
+      array(8) {
+        ["iat"] => int(1563419701)
+        ["aud"] => NULL
+        ["exp"] => int(1563419761)
+        ["sub"] => string(12) "权限验证"
+        ["iss"] => string(6) "johnxu"
+        ["nbf"] => int(1563419731)
+        ["jti"] => string(24) "201907181115015153519854"
+        ["payload"] => array(1) {
+          ["token"] => string(24) "8C873A9101AFD2F4B00A8D60"
+        }
+      }
+     */
+} catch (InvalidSignatureException $e) {
+    var_dump($e->getMessage()); // 签名错误
+} catch (InvalidVerifyException $e) {
+    var_dump($e->getMessage()); // 过期或者还没到生效期
+}
+
 ```
 
 ## AES 加密与解密
