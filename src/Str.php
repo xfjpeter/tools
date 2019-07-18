@@ -215,7 +215,7 @@ class Str
      */
     public function generateTradeNo(int $length = 10): string
     {
-        return date('YmdHis').self::getInstance()->cut(
+        return date('YmdHis') . self::getInstance()->cut(
                 self::getInstance()->arrayToString(
                     array_map(
                         'ord', str_split(
@@ -235,7 +235,7 @@ class Str
      */
     public function generateUid(string $prefix = ''): string
     {
-        return $prefix.self::getInstance()->arrayToString(
+        return $prefix . self::getInstance()->arrayToString(
                 array_map(
                     'ord', str_split(
                         self::getInstance()->cut(uniqid(), 6, 13), 1)
@@ -262,6 +262,22 @@ class Str
         $result = implode($split, $result);
 
         return strtoupper($result);
+    }
+
+    /**
+     * 格式化字节大小
+     * @param float  $size
+     * @param string $delimiter
+     * @return string
+     */
+    public function formatBytes(float $size, string $delimiter = '')
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+        for ($i = 0; $size >= 1024 && $i < 6; $i++) {
+            $size /= 1024;
+        }
+
+        return round($size, 2) . $delimiter . $units[$i];
     }
 
     /**
